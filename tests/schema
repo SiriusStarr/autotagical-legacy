@@ -1,0 +1,967 @@
+============================
+autotagical.schema
+============================
+
+Setup
+=====
+Initialize structures, silence logging, and import class.
+
+Logging
+-------
+Silence logging, as a lot of tests will deliberate do things that result in errors/warnings.
+
+>>> import logging
+>>> logging.basicConfig(level=logging.CRITICAL)
+
+Imports
+-------
+
+>>> import os
+>>> from autotagical.schema import AutotagicalSchema
+
+AutotagicalSchema.__init__()
+============================
+
+Constructor, initializes all attributes to blank and loads the validation schema.
+
+As the constructor loads a JSON schema file, it needs to be tested.  This incidentally is a test of the validation schema files packaged with *autotagical*.  This should not throw any exceptions.
+
+>>> test_schema = AutotagicalSchema()
+
+AutotagicalSchema.unnamed_patterns
+========================================
+
+Returns the unnamed_patterns attribute.  Does not require testing.
+
+AutotagicalSchema.tag_formats
+========================================
+
+Returns the tag_formats attribute.  Does not require testing.
+
+AutotagicalSchema.movement_schemas
+========================================
+
+Returns the movement_schema attribute.  Does not require testing.
+
+AutotagicalSchema.renaming_schemas
+========================================
+
+Returns the renaming_schema attribute.  Does not require testing.
+
+AutotagicalSchema.load_schema(json_input, append=False)
+=======================================================================
+
+Loads a movement/renaming schema from JSON data.  Validates that the data matches a known
+    schema first.
+
+Base Cases
+----------
+
+* Empty schema.
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+True
+
+-----End Schema-----
+* Correct File
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [
+...     {
+...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
+...       "tag_split_pattern": "\\s+"
+...     },
+...     {
+...       "tag_pattern": "<tagpattern>",
+...       "tag_split_pattern": "<splitpattern>"
+...     }
+...   ],
+...   "unnamed_patterns": [
+...     "Test[0-9]{4}\\.txt",
+...     "also this\\.txt"
+...   ],
+...   "renaming_schema": [
+...     {
+...       "filters": [
+...         "/C|nocat"
+...       ],
+...       "format_string": "empty"
+...     },
+...     {
+...       "filters": [
+...         "/C|American Styles",
+...         "/C|Belgian Styles"
+...       ],
+...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
+...     }
+...   ],
+...   "movement_schema": [
+...     {
+...       "filters": [
+...         "/C|Beer"
+...       ],
+...       "subfolder": "Beer Bottles",
+...       "subfilters": [
+...         {
+...           "filters": [
+...             "/C|Belgian Styles"
+...           ],
+...           "subfolder": "",
+...           "subfilters": []
+...         },
+...         {
+...           "filters": [
+...             "dipa"
+...           ],
+...           "subfolder": "DIPAs",
+...           "subfilters": [
+...             {
+...               "filters": [
+...                 "motueka"
+...               ],
+...               "subfolder": "Motueka",
+...               "subfilters": []
+...             }
+...           ]
+...         }
+...       ]
+...     },
+...     {
+...       "filters": [
+...         "/C|Whisky"
+...       ],
+...       "subfolder": "Whisky Bottles",
+...       "subfilters": [
+...         {
+...           "filters": [
+...             "highland",
+...             "islay"
+...           ],
+...           "subfolder": "Scotch Bottles",
+...           "subfilters": [
+...             {
+...               "filters": [
+...                 "islay"
+...               ],
+...               "subfolder": "Islay",
+...               "subfilters": []
+...             }
+...           ]
+...         },
+...         {
+...           "filters": [
+...             "bourbon"
+...           ],
+...           "subfolder": "Bourbon Bottles",
+...           "subfilters": []
+...         }
+...       ]
+...     }
+...   ]
+... })
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Beer']
+    Subfolder Name: "Beer Bottles"
+    Subfilters:
+      Filters: ['/C|Belgian Styles']
+      Subfolder Name: ""
+      Subfilters:
+      Filters: ['dipa']
+      Subfolder Name: "DIPAs"
+      Subfilters:
+        Filters: ['motueka']
+        Subfolder Name: "Motueka"
+        Subfilters:
+<BLANKLINE>
+    Filters: ['/C|Whisky']
+    Subfolder Name: "Whisky Bottles"
+    Subfilters:
+      Filters: ['highland', 'islay']
+      Subfolder Name: "Scotch Bottles"
+      Subfilters:
+        Filters: ['islay']
+        Subfolder Name: "Islay"
+        Subfilters:
+      Filters: ['bourbon']
+      Subfolder Name: "Bourbon Bottles"
+      Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|nocat']
+    Format String: empty
+    --
+    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Format String: Beer Bottle/ITER| /#|/EITER|
+    --
+  Tag Formats:
+    Tag Pattern: (?P<file>.+)(?P<raw_tags>\[(?P<tags>.+?)\])(?P<extension>.*?)
+    Tag Split Pattern: \s+
+    --
+    Tag Pattern: <tagpattern>
+    Tag Split Pattern: <splitpattern>
+    --
+  Unnamed Patterns:
+    Test[0-9]{4}\.txt
+    --
+    also this\.txt
+    --
+-----End Schema-----
+
+Appending
+---------
+
+With the append parameter set to True, we shouldn't overwrite the old tags.
+
+* Without append
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [
+...     {
+...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
+...       "tag_split_pattern": "\\s+"
+...     }
+...   ],
+...   "unnamed_patterns": [
+...     "Test[0-9]{4}\\.txt"
+...   ],
+...   "renaming_schema": [
+...     {
+...       "filters": [
+...         "/C|nocat"
+...       ],
+...       "format_string": "empty"
+...     }
+...   ],
+...   "movement_schema": [
+...     {
+...       "filters": [
+...         "/C|Beer"
+...       ],
+...       "subfolder": "Beer Bottles",
+...       "subfilters": [
+...         {
+...           "filters": [
+...             "/C|Belgian Styles"
+...           ],
+...           "subfolder": "",
+...           "subfilters": []
+...         },
+...         {
+...           "filters": [
+...             "dipa"
+...           ],
+...           "subfolder": "DIPAs",
+...           "subfilters": [
+...             {
+...               "filters": [
+...                 "motueka"
+...               ],
+...               "subfolder": "Motueka",
+...               "subfilters": []
+...             }
+...           ]
+...         }
+...       ]
+...     }
+...   ]
+... })
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Beer']
+    Subfolder Name: "Beer Bottles"
+    Subfilters:
+      Filters: ['/C|Belgian Styles']
+      Subfolder Name: ""
+      Subfilters:
+      Filters: ['dipa']
+      Subfolder Name: "DIPAs"
+      Subfilters:
+        Filters: ['motueka']
+        Subfolder Name: "Motueka"
+        Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|nocat']
+    Format String: empty
+    --
+  Tag Formats:
+    Tag Pattern: (?P<file>.+)(?P<raw_tags>\[(?P<tags>.+?)\])(?P<extension>.*?)
+    Tag Split Pattern: \s+
+    --
+  Unnamed Patterns:
+    Test[0-9]{4}\.txt
+    --
+-----End Schema-----
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [
+...     {
+...       "tag_pattern": "<tagpattern>",
+...       "tag_split_pattern": "<splitpattern>"
+...     }
+...   ],
+...   "unnamed_patterns": [
+...     "also this\\.txt"
+...   ],
+...   "renaming_schema": [
+...     {
+...       "filters": [
+...         "/C|American Styles",
+...         "/C|Belgian Styles"
+...       ],
+...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
+...     }
+...   ],
+...   "movement_schema": [
+...     {
+...       "filters": [
+...         "/C|Whisky"
+...       ],
+...       "subfolder": "Whisky Bottles",
+...       "subfilters": [
+...         {
+...           "filters": [
+...             "highland",
+...             "islay"
+...           ],
+...           "subfolder": "Scotch Bottles",
+...           "subfilters": [
+...             {
+...               "filters": [
+...                 "islay"
+...               ],
+...               "subfolder": "Islay",
+...               "subfilters": []
+...             }
+...           ]
+...         },
+...         {
+...           "filters": [
+...             "bourbon"
+...           ],
+...           "subfolder": "Bourbon Bottles",
+...           "subfilters": []
+...         }
+...       ]
+...     }
+...   ]
+... })
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Whisky']
+    Subfolder Name: "Whisky Bottles"
+    Subfilters:
+      Filters: ['highland', 'islay']
+      Subfolder Name: "Scotch Bottles"
+      Subfilters:
+        Filters: ['islay']
+        Subfolder Name: "Islay"
+        Subfilters:
+      Filters: ['bourbon']
+      Subfolder Name: "Bourbon Bottles"
+      Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Format String: Beer Bottle/ITER| /#|/EITER|
+    --
+  Tag Formats:
+    Tag Pattern: <tagpattern>
+    Tag Split Pattern: <splitpattern>
+    --
+  Unnamed Patterns:
+    also this\.txt
+    --
+-----End Schema-----
+
+* With append
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [
+...     {
+...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
+...       "tag_split_pattern": "\\s+"
+...     }
+...   ],
+...   "unnamed_patterns": [
+...     "Test[0-9]{4}\\.txt"
+...   ],
+...   "renaming_schema": [
+...     {
+...       "filters": [
+...         "/C|nocat"
+...       ],
+...       "format_string": "empty"
+...     }
+...   ],
+...   "movement_schema": [
+...     {
+...       "filters": [
+...         "/C|Beer"
+...       ],
+...       "subfolder": "Beer Bottles",
+...       "subfilters": [
+...         {
+...           "filters": [
+...             "/C|Belgian Styles"
+...           ],
+...           "subfolder": "",
+...           "subfilters": []
+...         },
+...         {
+...           "filters": [
+...             "dipa"
+...           ],
+...           "subfolder": "DIPAs",
+...           "subfilters": [
+...             {
+...               "filters": [
+...                 "motueka"
+...               ],
+...               "subfolder": "Motueka",
+...               "subfilters": []
+...             }
+...           ]
+...         }
+...       ]
+...     }
+...   ]
+... })
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Beer']
+    Subfolder Name: "Beer Bottles"
+    Subfilters:
+      Filters: ['/C|Belgian Styles']
+      Subfolder Name: ""
+      Subfilters:
+      Filters: ['dipa']
+      Subfolder Name: "DIPAs"
+      Subfilters:
+        Filters: ['motueka']
+        Subfolder Name: "Motueka"
+        Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|nocat']
+    Format String: empty
+    --
+  Tag Formats:
+    Tag Pattern: (?P<file>.+)(?P<raw_tags>\[(?P<tags>.+?)\])(?P<extension>.*?)
+    Tag Split Pattern: \s+
+    --
+  Unnamed Patterns:
+    Test[0-9]{4}\.txt
+    --
+-----End Schema-----
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [
+...     {
+...       "tag_pattern": "<tagpattern>",
+...       "tag_split_pattern": "<splitpattern>"
+...     }
+...   ],
+...   "unnamed_patterns": [
+...     "also this\\.txt"
+...   ],
+...   "renaming_schema": [
+...     {
+...       "filters": [
+...         "/C|American Styles",
+...         "/C|Belgian Styles"
+...       ],
+...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
+...     }
+...   ],
+...   "movement_schema": [
+...     {
+...       "filters": [
+...         "/C|Whisky"
+...       ],
+...       "subfolder": "Whisky Bottles",
+...       "subfilters": [
+...         {
+...           "filters": [
+...             "highland",
+...             "islay"
+...           ],
+...           "subfolder": "Scotch Bottles",
+...           "subfilters": [
+...             {
+...               "filters": [
+...                 "islay"
+...               ],
+...               "subfolder": "Islay",
+...               "subfilters": []
+...             }
+...           ]
+...         },
+...         {
+...           "filters": [
+...             "bourbon"
+...           ],
+...           "subfolder": "Bourbon Bottles",
+...           "subfilters": []
+...         }
+...       ]
+...     }
+...   ]
+... }, True)
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Beer']
+    Subfolder Name: "Beer Bottles"
+    Subfilters:
+      Filters: ['/C|Belgian Styles']
+      Subfolder Name: ""
+      Subfilters:
+      Filters: ['dipa']
+      Subfolder Name: "DIPAs"
+      Subfilters:
+        Filters: ['motueka']
+        Subfolder Name: "Motueka"
+        Subfilters:
+<BLANKLINE>
+    Filters: ['/C|Whisky']
+    Subfolder Name: "Whisky Bottles"
+    Subfilters:
+      Filters: ['highland', 'islay']
+      Subfolder Name: "Scotch Bottles"
+      Subfilters:
+        Filters: ['islay']
+        Subfolder Name: "Islay"
+        Subfilters:
+      Filters: ['bourbon']
+      Subfolder Name: "Bourbon Bottles"
+      Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|nocat']
+    Format String: empty
+    --
+    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Format String: Beer Bottle/ITER| /#|/EITER|
+    --
+  Tag Formats:
+    Tag Pattern: (?P<file>.+)(?P<raw_tags>\[(?P<tags>.+?)\])(?P<extension>.*?)
+    Tag Split Pattern: \s+
+    --
+    Tag Pattern: <tagpattern>
+    Tag Split Pattern: <splitpattern>
+    --
+  Unnamed Patterns:
+    Test[0-9]{4}\.txt
+    --
+    also this\.txt
+    --
+-----End Schema-----
+
+Incorrect Cases
+---------------
+
+* Nonsense versions
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "0.9",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": 0.9,
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": [],
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+
+* Out of date *autotagical* (i.e. trying to load a file produced by a newer version).
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "99.9",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+
+* Wrong top level structure
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema(dict())
+False
+>>> test_schema.load_schema('String')
+False
+>>> test_schema.load_schema(235)
+False
+>>> test_schema.load_schema(['string', 3])
+False
+
+* Wrong file type
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "wrong",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+
+* Missing/wrong schemas
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": []
+... })
+False
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "movement_schema": []
+... })
+False
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": "string"
+... })
+False
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": "string",
+...   "movement_schema": []
+... })
+False
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": "string",
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": ["string"],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": "string",
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+False
+
+AutotagicalSchema.load_schema_from_string(self, json_string, append=False)
+============================================================================
+
+Loads schema from JSON data in a string.  This validates against known schemas to ensure the data structure is correct.  This function is not used at this time and will not be extensively tested (since it largely depends on well-tested functions under it).
+
+With the append parameter set to True, we shouldn't overwrite the old tags.
+
+* Without append
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)","tag_split_pattern":"\\s+"}],"unnamed_patterns":["Test[0-9]{4}\\.txt"],"renaming_schema":[{"filters":["/C|nocat"],"format_string":"empty"}],"movement_schema":[{"filters":["/C|Beer"],"subfolder":"Beer Bottles","subfilters":[{"filters":["/C|Belgian Styles"],"subfolder":"","subfilters":[]},{"filters":["dipa"],"subfolder":"DIPAs","subfilters":[{"filters":["motueka"],"subfolder":"Motueka","subfilters":[]}]}]}]}')
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Beer']
+    Subfolder Name: "Beer Bottles"
+    Subfilters:
+      Filters: ['/C|Belgian Styles']
+      Subfolder Name: ""
+      Subfilters:
+      Filters: ['dipa']
+      Subfolder Name: "DIPAs"
+      Subfilters:
+        Filters: ['motueka']
+        Subfolder Name: "Motueka"
+        Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|nocat']
+    Format String: empty
+    --
+  Tag Formats:
+    Tag Pattern: (?P<file>.+)(?P<raw_tags>\[(?P<tags>.+?)\])(?P<extension>.*?)
+    Tag Split Pattern: \s+
+    --
+  Unnamed Patterns:
+    Test[0-9]{4}\.txt
+    --
+-----End Schema-----
+>>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"<tagpattern>","tag_split_pattern":"<splitpattern>"}],"unnamed_patterns":["also this\\.txt"],"renaming_schema":[{"filters":["/C|American Styles","/C|Belgian Styles"],"format_string":"Beer Bottle/ITER| /#|/EITER|"}],"movement_schema":[{"filters":["/C|Whisky"],"subfolder":"Whisky Bottles","subfilters":[{"filters":["highland","islay"],"subfolder":"Scotch Bottles","subfilters":[{"filters":["islay"],"subfolder":"Islay","subfilters":[]}]},{"filters":["bourbon"],"subfolder":"Bourbon Bottles","subfilters":[]}]}]}')
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Whisky']
+    Subfolder Name: "Whisky Bottles"
+    Subfilters:
+      Filters: ['highland', 'islay']
+      Subfolder Name: "Scotch Bottles"
+      Subfilters:
+        Filters: ['islay']
+        Subfolder Name: "Islay"
+        Subfilters:
+      Filters: ['bourbon']
+      Subfolder Name: "Bourbon Bottles"
+      Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Format String: Beer Bottle/ITER| /#|/EITER|
+    --
+  Tag Formats:
+    Tag Pattern: <tagpattern>
+    Tag Split Pattern: <splitpattern>
+    --
+  Unnamed Patterns:
+    also this\.txt
+    --
+-----End Schema-----
+
+* With append
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)","tag_split_pattern":"\\s+"}],"unnamed_patterns":["Test[0-9]{4}\\.txt"],"renaming_schema":[{"filters":["/C|nocat"],"format_string":"empty"}],"movement_schema":[{"filters":["/C|Beer"],"subfolder":"Beer Bottles","subfilters":[{"filters":["/C|Belgian Styles"],"subfolder":"","subfilters":[]},{"filters":["dipa"],"subfolder":"DIPAs","subfilters":[{"filters":["motueka"],"subfolder":"Motueka","subfilters":[]}]}]}]}')
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Beer']
+    Subfolder Name: "Beer Bottles"
+    Subfilters:
+      Filters: ['/C|Belgian Styles']
+      Subfolder Name: ""
+      Subfilters:
+      Filters: ['dipa']
+      Subfolder Name: "DIPAs"
+      Subfilters:
+        Filters: ['motueka']
+        Subfolder Name: "Motueka"
+        Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|nocat']
+    Format String: empty
+    --
+  Tag Formats:
+    Tag Pattern: (?P<file>.+)(?P<raw_tags>\[(?P<tags>.+?)\])(?P<extension>.*?)
+    Tag Split Pattern: \s+
+    --
+  Unnamed Patterns:
+    Test[0-9]{4}\.txt
+    --
+-----End Schema-----
+>>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"<tagpattern>","tag_split_pattern":"<splitpattern>"}],"unnamed_patterns":["also this\\.txt"],"renaming_schema":[{"filters":["/C|American Styles","/C|Belgian Styles"],"format_string":"Beer Bottle/ITER| /#|/EITER|"}],"movement_schema":[{"filters":["/C|Whisky"],"subfolder":"Whisky Bottles","subfilters":[{"filters":["highland","islay"],"subfolder":"Scotch Bottles","subfilters":[{"filters":["islay"],"subfolder":"Islay","subfilters":[]}]},{"filters":["bourbon"],"subfolder":"Bourbon Bottles","subfilters":[]}]}]}', True)
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Beer']
+    Subfolder Name: "Beer Bottles"
+    Subfilters:
+      Filters: ['/C|Belgian Styles']
+      Subfolder Name: ""
+      Subfilters:
+      Filters: ['dipa']
+      Subfolder Name: "DIPAs"
+      Subfilters:
+        Filters: ['motueka']
+        Subfolder Name: "Motueka"
+        Subfilters:
+<BLANKLINE>
+    Filters: ['/C|Whisky']
+    Subfolder Name: "Whisky Bottles"
+    Subfilters:
+      Filters: ['highland', 'islay']
+      Subfolder Name: "Scotch Bottles"
+      Subfilters:
+        Filters: ['islay']
+        Subfolder Name: "Islay"
+        Subfilters:
+      Filters: ['bourbon']
+      Subfolder Name: "Bourbon Bottles"
+      Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|nocat']
+    Format String: empty
+    --
+    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Format String: Beer Bottle/ITER| /#|/EITER|
+    --
+  Tag Formats:
+    Tag Pattern: (?P<file>.+)(?P<raw_tags>\[(?P<tags>.+?)\])(?P<extension>.*?)
+    Tag Split Pattern: \s+
+    --
+    Tag Pattern: <tagpattern>
+    Tag Split Pattern: <splitpattern>
+    --
+  Unnamed Patterns:
+    Test[0-9]{4}\.txt
+    --
+    also this\.txt
+    --
+-----End Schema-----
+
+AutotagicalSchema.load_schema_from_file(file_path, append=False)
+========================================================================
+
+Loads schema from JSON data in a file.  This validates against known schemas to ensure the data structure is correct.
+
+Normal Usage
+------------
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema_from_file(os.path.join('tests', 'files', 'test_schema.json'))
+True
+>>> print(test_schema)
+-----Schema-----
+  Movement Schemas:
+    Filters: ['/C|Beer']
+    Subfolder Name: "Beer Bottles"
+    Subfilters:
+      Filters: ['/C|Belgian Styles']
+      Subfolder Name: ""
+      Subfilters:
+      Filters: ['dipa']
+      Subfolder Name: "DIPAs"
+      Subfilters:
+        Filters: ['motueka']
+        Subfolder Name: "Motueka"
+        Subfilters:
+<BLANKLINE>
+    Filters: ['/C|Whisky']
+    Subfolder Name: "Whisky Bottles"
+    Subfilters:
+      Filters: ['highland', 'islay']
+      Subfolder Name: "Scotch Bottles"
+      Subfilters:
+        Filters: ['islay']
+        Subfolder Name: "Islay"
+        Subfilters:
+      Filters: ['bourbon']
+      Subfolder Name: "Bourbon Bottles"
+      Subfilters:
+<BLANKLINE>
+  Renaming Schemas:
+    Filters: ['/C|nocat']
+    Format String: empty
+    --
+    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Format String: Beer Bottle/ITER| /#|/EITER|
+    --
+  Tag Formats:
+    Tag Pattern: (?P<file>.+)(?P<raw_tags>\[(?P<tags>.+?)\])(?P<extension>.*?)
+    Tag Split Pattern: \s+
+    --
+    Tag Pattern: <tagpattern>
+    Tag Split Pattern: <splitpattern>
+    --
+  Unnamed Patterns:
+    Test[0-9]{4}\.txt
+    --
+    also this\.txt
+    --
+-----End Schema-----
+
+Bad Cases
+---------
+
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema_from_file(os.path.join('tests', 'files', 'bad_test_schema.json'))
+False

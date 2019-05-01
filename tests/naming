@@ -1,0 +1,1134 @@
+============================
+autotagical.naming
+============================
+
+Setup
+=====
+Initialize structures, silence logging, and import all functions and class.
+
+Logging
+-------
+Silence logging, as a lot of tests will deliberate do things that result in errors/warnings.
+
+>>> import logging
+>>> logging.basicConfig(level=logging.CRITICAL)
+
+Test Categories
+---------------
+Set up a basic categories object.
+
+>>> from autotagical.categories import AutotagicalCategories
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale",
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+
+Test Schema
+-----------
+Set up test schemas.
+
+>>> from autotagical.schema import AutotagicalSchema
+>>> test_schema = AutotagicalSchema()
+>>> test_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [
+...     {
+...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
+...       "tag_split_pattern": "\\s+"
+...     },
+...     {
+...       "tag_pattern": "<tagpattern>",
+...       "tag_split_pattern": "<splitpattern>"
+...     }
+...   ],
+...   "unnamed_patterns": [
+...     "Test[0-9]{4}\\.txt",
+...     "also this\\.txt"
+...   ],
+...   "renaming_schema": [
+...     {
+...       "filters": [
+...         "/C|nocat"
+...       ],
+...       "format_string": "empty"
+...     },
+...     {
+...       "filters": [
+...         "/C|American Styles",
+...         "/C|Belgian Styles"
+...       ],
+...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
+...     }
+...   ],
+...   "movement_schema": [
+...     {
+...       "filters": [
+...         "/C|Beer"
+...       ],
+...       "subfolder": "Beer Bottles",
+...       "subfilters": [
+...         {
+...           "filters": [
+...             "/C|Belgian Styles"
+...           ],
+...           "subfolder": "",
+...           "subfilters": []
+...         },
+...         {
+...           "filters": [
+...             "dipa"
+...           ],
+...           "subfolder": "DIPAs",
+...           "subfilters": [
+...             {
+...               "filters": [
+...                 "motueka"
+...               ],
+...               "subfolder": "Motueka",
+...               "subfilters": []
+...             }
+...           ]
+...         }
+...       ]
+...     },
+...     {
+...       "filters": [
+...         "/C|Whisky"
+...       ],
+...       "subfolder": "Whisky Bottles",
+...       "subfilters": [
+...         {
+...           "filters": [
+...             "highland",
+...             "islay"
+...           ],
+...           "subfolder": "Scotch Bottles",
+...           "subfilters": [
+...             {
+...               "filters": [
+...                 "islay"
+...               ],
+...               "subfolder": "Islay",
+...               "subfilters": []
+...             }
+...           ]
+...         },
+...         {
+...           "filters": [
+...             "bourbon"
+...           ],
+...           "subfolder": "Bourbon Bottles",
+...           "subfilters": []
+...         }
+...       ]
+...     }
+...   ]
+... })
+True
+
+>>> empty_schema = AutotagicalSchema()
+>>> empty_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.0",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schema": [],
+...   "movement_schema": []
+... })
+True
+
+Test Tags
+---------
+Set up basic tags.
+
+>>> test_tags_1 = ['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+>>> test_tags_2 = ['pale_ale', 'ale', 'refrigerated', 'cascade']
+>>> test_tags_3 = ['tripel', 'ale', 'refrigerated']
+>>> test_tags_4 = ['scotch', 'laphroaig', 'islay']
+>>> test_tags_5 = ['bourbon', '23_year', 'pappys']
+>>> test_tags_6 = ['non-alcoholic', 'refrigerated']
+
+Test Files
+----------
+>>> from autotagical.file_handler import AutotagicalFile
+>>> import os
+>>> test_file_1 = AutotagicalFile(
+...   name='Test1999',
+...   raw_name='Test1999[dipa ale refrigerated simcoe ctz centennial].txt',
+...   original_path=os.path.join('tests', 'files', 'Test1999[dipa ale refrigerated simcoe ctz centennial].txt'),
+...   extension='.txt',
+...   tags='[dipa ale refrigerated simcoe ctz centennial]',
+...   tag_array=['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+... )
+>>> test_file_2 = AutotagicalFile(
+...   name='Test1532',
+...   raw_name='Test1532[pale_ale ale refrigerated cascade].txt',
+...   original_path=os.path.join('tests', 'files', 'Test1532[pale_ale ale refrigerated cascade].txt'),
+...   extension='.txt',
+...   tags='[pale_ale ale refrigerated cascade]',
+...   tag_array=['pale_ale', 'ale', 'refrigerated', 'cascade']
+... )
+>>> test_file_3 = AutotagicalFile(
+...   name='Affligem Tripel',
+...   raw_name='Affligem Tripel[tripel ale refrigerated].txt',
+...   original_path=os.path.join('tests', 'files', 'Affligem Tripel[tripel ale refrigerated].txt'),
+...   extension='.txt',
+...   tags='[tripel ale refrigerated]',
+...   tag_array=['tripel', 'ale', 'refrigerated']
+... )
+>>> test_file_4 = AutotagicalFile(
+...   name='also this',
+...   raw_name='also this[scotch laphroaig islay].txt',
+...   original_path=os.path.join('tests', 'files', 'also this[scotch laphroaig islay].txt'),
+...   extension='.txt',
+...   tags='[scotch laphroaig islay]',
+...   tag_array = ['scotch', 'laphroaig', 'islay']
+... )
+>>> test_file_5 = AutotagicalFile(
+...   name='Pappys Family Reserve',
+...   raw_name='Pappys Family Reserve[bourbon 23_year pappys].txt',
+...   original_path=os.path.join('tests', 'files', 'Pappys Family Reserve[bourbon 23_year pappys].txt'),
+...   extension='.txt',
+...   tags='[bourbon 23_year pappys]',
+...   tag_array=['bourbon', '23_year', 'pappys']
+... )
+>>> test_file_6 = AutotagicalFile(
+...   name='Water',
+...   raw_name='Water[non-alcoholic refrigerated].txt',
+...   original_path=os.path.join('tests', 'files', 'Water[non-alcoholic refrigerated].txt'),
+...   extension='.txt',
+...   tags='[non-alcoholic refrigerated]',
+...   tag_array=['non-alcoholic', 'refrigerated']
+... )
+>>> files = [test_file_1, test_file_2, test_file_3, test_file_4, test_file_5, test_file_6]
+
+Import Functions
+----------------
+
+>>> from autotagical.naming import simplify_to_conditionals, evaluate_conditionals, strip_iters, evaluate_iters, substitute_operators, AutotagicalNamer
+
+simplify_to_conditionals(format_string)
+=======================================
+
+Takes a full format string and simplifies the "convenience" operators to simply be conditionals.
+
+Edge Case
+---------
+
+* Empty format string (should throw an exception)
+
+>>> simplify_to_conditionals('')
+''
+
+Base Case
+---------
+
+* No operators
+
+>>> simplify_to_conditionals('The base case contains no operators.')
+'The base case contains no operators.'
+
+* Single operators
+
+>>> simplify_to_conditionals('Go away /?T|tags/| please.')
+'Go away /?|tags/T|tags/F|/E?| please.'
+
+>>> simplify_to_conditionals('Go away /?C|categories/| please.')
+'Go away /?|/C|categories/T|categories/F|/E?| please.'
+
+* Multiple operators
+
+>>> simplify_to_conditionals('Go away /?C|categories/| and /?T|tags/| please.')
+'Go away /?|/C|categories/T|categories/F|/E?| and /?|tags/T|tags/F|/E?| please.'
+
+Complex Cases
+-------------
+
+* Operators but none to simplify
+
+>>> simplify_to_conditionals('This is a complicated string with '
+...                          '/?|tag1/T|true/F|false/E?| conditional '
+...                          'operators and /ITER|t/#|t/EITER|, /FILE|, /TAGS|, '
+...                          'and /EXT| operators.')
+'This is a complicated string with /?|tag1/T|true/F|false/E?| conditional operators and /ITER|t/#|t/EITER|, /FILE|, /TAGS|, and /EXT| operators.'
+
+* Operators and ones to replace
+
+>>> simplify_to_conditionals('This is a complicated string with '
+...                          '/?|/C|category1/T|true/F|false/E?| conditional '
+...                          'operators and /ITER|t/#|t/EITER|, /FILE|, /TAGS|, '
+...                          'and /EXT| operators and /?T|Tag z!/| or maybe /?C|cat uh gories/| '
+...                          'in it.')
+'This is a complicated string with /?|/C|category1/T|true/F|false/E?| conditional operators and /ITER|t/#|t/EITER|, /FILE|, /TAGS|, and /EXT| operators and /?|Tag z!/T|Tag z!/F|/E?| or maybe /?|/C|cat uh gories/T|cat uh gories/F|/E?| in it.'
+
+evaluate_conditionals(format_string, tag_array, categories)
+===========================================================
+
+Takes a format string and evaluates the conditional operators based on the tag array.
+
+Edge Cases
+----------
+
+* Empty format string
+
+>>> evaluate_conditionals('', test_tags_1, test_categories)
+''
+
+* Empty Tags
+
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', [], test_categories)
+'This is a not dipa conditional operator.'
+
+* Both Empty
+
+>>> evaluate_conditionals('', [], test_categories)
+''
+
+Base Case
+---------
+
+>>> evaluate_conditionals('The base case contains no operators.', test_tags_1, test_categories)
+'The base case contains no operators.'
+
+Simple Cases
+------------
+
+* True
+
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', test_tags_1, test_categories)
+'This is a DIPA! conditional operator.'
+
+* False
+
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', test_tags_2, test_categories)
+'This is a not dipa conditional operator.'
+
+Complex Cases
+-------------
+
+* Blank replacements
+
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|/E?| conditional operator.', test_tags_1, test_categories)
+'This is a DIPA! conditional operator.'
+>>> evaluate_conditionals('This is a /?|dipa/T|/F|not dipa/E?| conditional operator.', test_tags_1, test_categories)
+'This is a  conditional operator.'
+>>> evaluate_conditionals('This is a /?|dipa/T|/F|/E?| conditional operator.', test_tags_1, test_categories)
+'This is a  conditional operator.'
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|/E?| conditional operator.', test_tags_2, test_categories)
+'This is a  conditional operator.'
+>>> evaluate_conditionals('This is a /?|dipa/T|/F|not dipa/E?| conditional operator.', test_tags_2, test_categories)
+'This is a not dipa conditional operator.'
+>>> evaluate_conditionals('This is a /?|dipa/T|/F|/E?| conditional operator.', test_tags_2, test_categories)
+'This is a  conditional operator.'
+
+* Complex conditions
+
+>>> complex_filter = '/C|American Styles/&|/!|dipa'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_1, test_categories)
+'This is a n conditional operator.'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_2, test_categories)
+'This is a y conditional operator.'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_3, test_categories)
+'This is a n conditional operator.'
+
+* Multiple conditionals
+
+>>> complex_filter = '/C|American Styles/&|/!|dipa'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_1, test_categories)
+'This is a n conditional operator and yes another.'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_2, test_categories)
+'This is a y conditional operator and yes another.'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_4, test_categories)
+'This is a n conditional operator and no another.'
+
+* Operators within conditionals
+
+>>> complex_filter = '/C|American Styles/&|/!|dipa'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_1, test_categories)
+'This is a /EXT| conditional operator and yes another.'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_2, test_categories)
+'This is a /FILE| conditional operator and yes another.'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_4, test_categories)
+'This is a /EXT| conditional operator and no another.'
+
+strip_iters(format_string)
+==========================
+Takes a format string and strips all /ITER| tags from it.
+
+Edge Case
+---------
+
+* Empty format string
+
+>>> strip_iters('')
+''
+
+* Occurrence operator outside of iter
+
+>>> strip_iters('This /#| should not be there.')
+Traceback (most recent call last):
+    ...
+autotagical.schema.SchemaError: Occurrence /#| operator outside of /ITER| operator!
+>>> strip_iters('This /#| should not be /ITER|a/EITER| there.')
+Traceback (most recent call last):
+    ...
+autotagical.schema.SchemaError: Occurrence /#| operator outside of /ITER| operator!
+
+Base Case
+---------
+
+>>> strip_iters('The base case contains no operators.')
+'The base case contains no operators.'
+
+Simple Cases
+------------
+
+* Single ITER operator
+
+Check iter operator
+>>> strip_iters('This is a /ITER|a/#|s/EITER| iter operator.')
+'This is a  iter operator.'
+
+* Blank replacements
+
+>>> strip_iters('This is a /ITER|/EITER| iter operator.')
+'This is a  iter operator.'
+
+Complex Cases
+-------------
+
+* Multiple number insertions
+
+Check multiple number insertions
+>>> strip_iters('This is a /ITER|a/#|b/#|c/EITER| iter operator.')
+'This is a  iter operator.'
+
+* Multiple ITER operators
+
+>>> strip_iters('This is a /ITER|a/#|b/#|c/EITER| iter operator and /ITER|d/EITER| another.')
+'This is a  iter operator and  another.'
+
+* Other operators
+
+>>> strip_iters('This is a /ITER|a/#|/?|dipa/T|d/F|nd/E?|/#|c/EITER| iter'
+...                        ' operator.')
+'This is a  iter operator.'
+
+evaluate_iters(format_string, occurrence)
+=========================================
+Takes a format string and strips all /ITER| tags from it.
+
+Edge Case
+---------
+
+* Empty format string
+
+>>> evaluate_iters('', 3)
+''
+
+* Occurrence operator outside of iter.  Should handle gracefully (strip_iters throws an exception)
+
+>>> evaluate_iters('This /#| should not be there.', 3)
+'This 3 should not be there.'
+>>> evaluate_iters('This /#| should not be /ITER|a/EITER| there.', 3)
+'This 3 should not be a there.'
+
+Base Case
+---------
+
+>>> evaluate_iters('The base case contains no operators.', 9)
+'The base case contains no operators.'
+
+Simple Cases
+------------
+
+* Single ITER operator
+
+Check iter operator
+>>> evaluate_iters('This is a /ITER|a/#|s/EITER| iter operator.', 117)
+'This is a a117s iter operator.'
+
+* Blank replacements
+
+>>> evaluate_iters('This is a /ITER|/EITER| iter operator.', 6)
+'This is a  iter operator.'
+
+Complex Cases
+-------------
+
+* Multiple number insertions
+
+Check multiple number insertions
+>>> evaluate_iters('This is a /ITER|a/#|b/#|c/EITER| iter operator.', 2)
+'This is a a2b2c iter operator.'
+
+* Multiple ITER operators
+
+>>> evaluate_iters('This is a /ITER|a/#|b/#|c/EITER| iter operator and /ITER|d/EITER| another.', 5)
+'This is a a5b5c iter operator and d another.'
+
+* Other operators
+
+>>> evaluate_iters('This is a /ITER|a/#|/?|dipa/T|d/F|nd/E?|/#|c/EITER| iter operator.', 1)
+'This is a a1/?|dipa/T|d/F|nd/E?|1c iter operator.'
+
+substitute_operators(format_string, file, categories)
+=====================================================
+
+Takes a format string without /ITER| operators, an AutotagicalFile object, and an AutotagicalCategories object, and fully evaluates all operators within the format string.
+
+Base Case
+---------
+>>> substitute_operators('The base case contains no operators.', test_file_1, test_categories)
+'The base case contains no operators.'
+
+Edge Cases
+----------
+
+* Empty format string
+
+>>> substitute_operators('', test_file_1, test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.schema.SchemaError: Completely empty format string!
+
+Simple Operators
+----------------
+
+* /FILE| operator
+
+>>> substitute_operators('This is /FILE|.', test_file_1, test_categories)
+'This is Test1999.'
+
+* /EXT| operator
+
+>>> substitute_operators('This is /EXT|.', test_file_2, test_categories)
+'This is .txt.'
+
+* /TAGS| operator
+
+>>> substitute_operators('This is /TAGS|.', test_file_3, test_categories)
+'This is [tripel ale refrigerated].'
+
+Conditionals
+------------
+
+* Tag conditionals
+
+>>> substitute_operators('This is a /?T|scotch/| tag operator.',
+...                                 test_file_1, test_categories)
+'This is a  tag operator.'
+>>> substitute_operators('This is a /?T|scotch/| tag operator.',
+...                                 test_file_4, test_categories)
+'This is a scotch tag operator.'
+
+* Category conditionals
+
+>>> substitute_operators('This is a /?C|American Styles/| category operator.',
+...                                 test_file_1, test_categories)
+'This is a American Styles category operator.'
+>>> substitute_operators('This is a /?C|American Styles/| category operator.',
+...                                 test_file_3, test_categories)
+'This is a  category operator.'
+
+* Conditional operator
+
+>>> substitute_operators('This is a /?|dipa/T|dipa/F|not dipa/E?| conditional '
+...                                 'operator.', test_file_1, test_categories)
+'This is a dipa conditional operator.'
+>>> substitute_operators('This is a /?|dipa/T|dipa/F|not dipa/E?| conditional '
+...                                 'operator.', test_file_5, test_categories)
+'This is a not dipa conditional operator.'
+
+* Complex conditions
+
+>>> complex_filter = '/C|American Styles/&|/!|dipa'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_1, test_categories)
+'This is a n conditional operator.'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_2, test_categories)
+'This is a y conditional operator.'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_4, test_categories)
+'This is a n conditional operator.'
+
+
+* Combination of conditionals
+
+>>> substitute_operators('This is a /?C|American Styles/| category and /?T|dipa/| tag operator.',
+...                                 test_file_1, test_categories)
+'This is a American Styles category and dipa tag operator.'
+>>> substitute_operators('This is a /?C|American Styles/| category and /?T|dipa/| tag operator.',
+...                                 test_file_2, test_categories)
+'This is a American Styles category and  tag operator.'
+>>> substitute_operators('This is a /?C|American Styles/| category and /?T|dipa/| tag operator.',
+...                                 test_file_3, test_categories)
+'This is a  category and  tag operator.'
+
+
+Complex Combinations
+--------------------
+
+>>> complex_filter = '/C|American Styles/&|/!|dipa'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/TAGS|/F|/EXT|/E?| conditional operator.', test_file_1, test_categories)
+'This is a .txt conditional operator.'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/FILE|/F|/TAGS|/E?| conditional operator.', test_file_2, test_categories)
+'This is a Test1532 conditional operator.'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/FILE|/F|/TAGS|/E?| conditional operator.', test_file_4, test_categories)
+'This is a [scotch laphroaig islay] conditional operator.'
+
+Bad Cases
+---------
+
+* Bad operators (throws a warning but doesn't fail)
+
+>>> substitute_operators('This is a string with a / messed up operator. /FILE|', test_file_1, test_categories)
+'This is a string with a / messed up operator. Test1999'
+
+* Nested conditionals (not supported)
+
+>>> substitute_operators('So /?|tag/T|nested/?|tag2/T|conditionals/F|are/E?|bad/F|but/E?| do not fail./FILE|', test_file_1, test_categories)
+'So arebad/F|but/E?| do not fail.Test1999'
+
+AutotagicalNamer(renaming_schema, unnamed_patterns)
+=================================================================
+
+Constructor.  Compiles necessary regexes and initializes attributes.
+
+Simple Tests
+------------
+
+* Empty Schema
+
+>>> test_namer = AutotagicalNamer(empty_schema.renaming_schemas, test_schema.unnamed_patterns)
+Traceback (most recent call last):
+    ...
+autotagical.schema.SchemaError: Completely empty renaming schema!
+>>> AutotagicalNamer(test_schema.renaming_schemas, [])
+Traceback (most recent call last):
+    ...
+autotagical.schema.SchemaError: Completely empty unnamed file schema!
+
+* Correct File
+
+>>> AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns) #doctest: +ELLIPSIS
+<autotagical.naming.AutotagicalNamer object at 0x...>
+
+AutotagicalNamer.check_if_unnamed(file_name)
+============================================
+
+Takes a (tagless) file name and determines whether or not it matches any of the unnamed patterns known by the class.
+
+Edge Cases
+----------
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> test_namer.check_if_unnamed('')
+False
+
+
+
+Normal Use
+----------
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> test_namer.check_if_unnamed('')
+False
+>>> test_namer.check_if_unnamed(test_file_1.name + test_file_1.extension)
+True
+>>> test_namer.check_if_unnamed(test_file_2.name + test_file_2.extension)
+True
+>>> test_namer.check_if_unnamed(test_file_3.name + test_file_3.extension)
+False
+>>> test_namer.check_if_unnamed(test_file_4.name + test_file_4.extension)
+True
+>>> test_namer.check_if_unnamed(test_file_5.name + test_file_5.extension)
+False
+>>> test_namer.check_if_unnamed(test_file_6.name + test_file_6.extension)
+False
+
+AutotagicalNamer.find_format_string(tag_array, categories)
+==========================================================
+
+Takes a file's tag array and finds the first matching renaming schema.
+
+Edge Cases
+----------
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> test_namer.find_format_string([], test_categories)
+False
+
+Normal Case
+-----------
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> test_namer.find_format_string(test_tags_1, test_categories)
+'Beer Bottle/ITER| /#|/EITER|'
+>>> test_namer.find_format_string(test_tags_2, test_categories)
+'Beer Bottle/ITER| /#|/EITER|'
+>>> test_namer.find_format_string(test_tags_3, test_categories)
+'Beer Bottle/ITER| /#|/EITER|'
+>>> test_namer.find_format_string(test_tags_4, test_categories)
+False
+>>> test_namer.find_format_string(test_tags_5, test_categories)
+False
+>>> test_namer.find_format_string(test_tags_6, test_categories)
+False
+
+def determine_names(self, file_list, categories, force_name=False, force_fail_bad=False, clear_occurrences=False):
+=============================================================================================================================
+Takes a list of files and processes how they should be renamed according to a schema.
+
+Edge Cases
+----------
+
+Empty file list
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> test_namer.determine_names([], test_categories)
+[]
+
+Normal Function
+---------------
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> output = test_namer.determine_names(files, test_categories)
+>>> for f in output:
+...     print(f)
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1999"
+  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Output Name: "Beer Bottle 1"
+  Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Rename Failed: False
+  Tags: "[dipa ale refrigerated simcoe ctz centennial]"
+  Tag Array: ['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1532"
+  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Output Name: "Beer Bottle 2"
+  Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
+  Rename Failed: False
+  Tags: "[pale_ale ale refrigerated cascade]"
+  Tag Array: ['pale_ale', 'ale', 'refrigerated', 'cascade']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Affligem Tripel"
+  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
+  Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
+  Rename Failed: False
+  Tags: "[tripel ale refrigerated]"
+  Tag Array: ['tripel', 'ale', 'refrigerated']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "also this"
+  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Output Name: "also this[scotch laphroaig islay].txt"
+  Raw Name: "also this[scotch laphroaig islay].txt"
+  Rename Failed: True
+  Tags: "[scotch laphroaig islay]"
+  Tag Array: ['scotch', 'laphroaig', 'islay']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Pappys Family Reserve"
+  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Rename Failed: False
+  Tags: "[bourbon 23_year pappys]"
+  Tag Array: ['bourbon', '23_year', 'pappys']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Water"
+  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Output Name: "Water[non-alcoholic refrigerated].txt"
+  Raw Name: "Water[non-alcoholic refrigerated].txt"
+  Rename Failed: False
+  Tags: "[non-alcoholic refrigerated]"
+  Tag Array: ['non-alcoholic', 'refrigerated']
+-----End File-----
+
+Force Name
+----------
+
+* With failing a force name == name failed
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> output = test_namer.determine_names(files, test_categories, True, True)
+>>> for f in output:
+...     print(f)
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1999"
+  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Output Name: "Beer Bottle 1"
+  Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Rename Failed: False
+  Tags: "[dipa ale refrigerated simcoe ctz centennial]"
+  Tag Array: ['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1532"
+  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Output Name: "Beer Bottle 2"
+  Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
+  Rename Failed: False
+  Tags: "[pale_ale ale refrigerated cascade]"
+  Tag Array: ['pale_ale', 'ale', 'refrigerated', 'cascade']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Affligem Tripel"
+  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Output Name: "Beer Bottle 3"
+  Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
+  Rename Failed: False
+  Tags: "[tripel ale refrigerated]"
+  Tag Array: ['tripel', 'ale', 'refrigerated']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "also this"
+  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Output Name: "also this[scotch laphroaig islay].txt"
+  Raw Name: "also this[scotch laphroaig islay].txt"
+  Rename Failed: True
+  Tags: "[scotch laphroaig islay]"
+  Tag Array: ['scotch', 'laphroaig', 'islay']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Pappys Family Reserve"
+  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Rename Failed: True
+  Tags: "[bourbon 23_year pappys]"
+  Tag Array: ['bourbon', '23_year', 'pappys']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Water"
+  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Output Name: "Water[non-alcoholic refrigerated].txt"
+  Raw Name: "Water[non-alcoholic refrigerated].txt"
+  Rename Failed: True
+  Tags: "[non-alcoholic refrigerated]"
+  Tag Array: ['non-alcoholic', 'refrigerated']
+-----End File-----
+
+* With failing a force name != name failed
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> output = test_namer.determine_names(files, test_categories, True, False)
+>>> for f in output:
+...     print(f)
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1999"
+  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Output Name: "Beer Bottle 1"
+  Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Rename Failed: False
+  Tags: "[dipa ale refrigerated simcoe ctz centennial]"
+  Tag Array: ['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1532"
+  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Output Name: "Beer Bottle 2"
+  Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
+  Rename Failed: False
+  Tags: "[pale_ale ale refrigerated cascade]"
+  Tag Array: ['pale_ale', 'ale', 'refrigerated', 'cascade']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Affligem Tripel"
+  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Output Name: "Beer Bottle 3"
+  Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
+  Rename Failed: False
+  Tags: "[tripel ale refrigerated]"
+  Tag Array: ['tripel', 'ale', 'refrigerated']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "also this"
+  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Output Name: "also this[scotch laphroaig islay].txt"
+  Raw Name: "also this[scotch laphroaig islay].txt"
+  Rename Failed: True
+  Tags: "[scotch laphroaig islay]"
+  Tag Array: ['scotch', 'laphroaig', 'islay']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Pappys Family Reserve"
+  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Rename Failed: False
+  Tags: "[bourbon 23_year pappys]"
+  Tag Array: ['bourbon', '23_year', 'pappys']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Water"
+  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Output Name: "Water[non-alcoholic refrigerated].txt"
+  Raw Name: "Water[non-alcoholic refrigerated].txt"
+  Rename Failed: False
+  Tags: "[non-alcoholic refrigerated]"
+  Tag Array: ['non-alcoholic', 'refrigerated']
+-----End File-----
+
+Clear Occurrences
+-----------------
+
+* Without clearing
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> output = test_namer.determine_names(files, test_categories, True, True, False)
+>>> output = test_namer.determine_names(files, test_categories, True, True, False)
+>>> for f in output:
+...     print(f)
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1999"
+  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Output Name: "Beer Bottle 4"
+  Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Rename Failed: False
+  Tags: "[dipa ale refrigerated simcoe ctz centennial]"
+  Tag Array: ['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1532"
+  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Output Name: "Beer Bottle 5"
+  Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
+  Rename Failed: False
+  Tags: "[pale_ale ale refrigerated cascade]"
+  Tag Array: ['pale_ale', 'ale', 'refrigerated', 'cascade']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Affligem Tripel"
+  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Output Name: "Beer Bottle 6"
+  Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
+  Rename Failed: False
+  Tags: "[tripel ale refrigerated]"
+  Tag Array: ['tripel', 'ale', 'refrigerated']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "also this"
+  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Output Name: "also this[scotch laphroaig islay].txt"
+  Raw Name: "also this[scotch laphroaig islay].txt"
+  Rename Failed: True
+  Tags: "[scotch laphroaig islay]"
+  Tag Array: ['scotch', 'laphroaig', 'islay']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Pappys Family Reserve"
+  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Rename Failed: True
+  Tags: "[bourbon 23_year pappys]"
+  Tag Array: ['bourbon', '23_year', 'pappys']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Water"
+  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Output Name: "Water[non-alcoholic refrigerated].txt"
+  Raw Name: "Water[non-alcoholic refrigerated].txt"
+  Rename Failed: True
+  Tags: "[non-alcoholic refrigerated]"
+  Tag Array: ['non-alcoholic', 'refrigerated']
+-----End File-----
+
+
+* With clearing
+
+>>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
+>>> output = test_namer.determine_names(files, test_categories, True, True, True)
+>>> output = test_namer.determine_names(files, test_categories, True, True, True)
+>>> for f in output:
+...     print(f)
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1999"
+  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Output Name: "Beer Bottle 1"
+  Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Rename Failed: False
+  Tags: "[dipa ale refrigerated simcoe ctz centennial]"
+  Tag Array: ['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1532"
+  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Output Name: "Beer Bottle 2"
+  Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
+  Rename Failed: False
+  Tags: "[pale_ale ale refrigerated cascade]"
+  Tag Array: ['pale_ale', 'ale', 'refrigerated', 'cascade']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Affligem Tripel"
+  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Output Name: "Beer Bottle 3"
+  Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
+  Rename Failed: False
+  Tags: "[tripel ale refrigerated]"
+  Tag Array: ['tripel', 'ale', 'refrigerated']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "also this"
+  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Output Name: "also this[scotch laphroaig islay].txt"
+  Raw Name: "also this[scotch laphroaig islay].txt"
+  Rename Failed: True
+  Tags: "[scotch laphroaig islay]"
+  Tag Array: ['scotch', 'laphroaig', 'islay']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Pappys Family Reserve"
+  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Rename Failed: True
+  Tags: "[bourbon 23_year pappys]"
+  Tag Array: ['bourbon', '23_year', 'pappys']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Water"
+  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Output Name: "Water[non-alcoholic refrigerated].txt"
+  Raw Name: "Water[non-alcoholic refrigerated].txt"
+  Rename Failed: True
+  Tags: "[non-alcoholic refrigerated]"
+  Tag Array: ['non-alcoholic', 'refrigerated']
+-----End File-----

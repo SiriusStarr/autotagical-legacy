@@ -1,0 +1,1563 @@
+================================
+autotagical.categories
+================================
+
+Setup
+=====
+Initialize structures, silence logging, and import class.
+
+Logging
+-------
+Silence logging, as a lot of tests will deliberate do things that result in errors/warnings.
+
+>>> import logging
+>>> logging.basicConfig(level=logging.CRITICAL)
+
+Imports
+-------
+
+>>> import os
+>>> from autotagical.categories import AutotagicalCategories
+
+AutotagicalCategories.__init__()
+================================
+
+Constructor, initializes category dictionary and loads validation schemas.
+
+As the constructor loads JSON schema files, it needs to be tested.  This incidentally is a test of the validation schema files packaged with *autotagical*.  This should not throw any exceptions.
+
+>>> test_categories = AutotagicalCategories()
+
+AutotagicalCategories.get_category_tags(category)
+=================================================
+
+Returns all tags in a specified category.
+
+Base Case
+---------
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale",
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> sorted(test_categories.get_category_tags('Belgian Styles'))
+['dubbel', 'tripel', 'witbier']
+
+Wrong Cases
+-----------
+
+* Accessing non-existent category (prints *logging.warning()* but doesn't fail).
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale",
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_categories.get_category_tags('Sours')
+set()
+
+AutotagicalCategories.load_autotagical_format(json_input, append=False)
+=======================================================================
+
+Loads categories from JSON data in the *autotagical* format.  This does not validate the data, as this should be handled upstream.
+
+Base Cases
+----------
+
+* Empty categories.
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": []
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+-----End Categories-----
+
+* Correct File
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale",
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+Appending
+---------
+
+With the append parameter set to True, we shouldn't overwrite the old tags.
+
+* Without append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       },
+...       {
+...         "name": "American Styles",
+...         "tags": ["american_light_lager"]
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['american_light_lager']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+* With append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       },
+...       {
+...         "name": "American Styles",
+...         "tags": ["american_light_lager", "ipa"]
+...       }
+...     ]
+...   }, True)
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['american_light_lager', 'dipa', 'ipa', 'pale_ale']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+Incorrect Cases
+---------------
+
+* Nonsense versions
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "0.9",
+...     "categories": []
+...   })
+False
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": 0.9,
+...     "categories": []
+...   })
+False
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": [],
+...     "categories": []
+...   })
+False
+
+* Out of date *autotagical* (i.e. trying to load a file produced by a newer version).
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "99.9",
+...     "categories": []
+...   })
+False
+
+AutotagicalCategories.load_tagspaces_format(json_input, append=False)
+=======================================================================
+
+Loads categories from JSON data in the *TagSpaces* format.  This does not validate the data, as this should be handled upstream.
+
+Base Cases
+----------
+
+* Empty categories.
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": []
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+-----End Categories-----
+
+* Correct File
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "uuid": "e3fef207-6ddf-4df7-add5-ef3e511c8f0a",
+...         "title": "American Styles",
+...         "color": "#61DD61",
+...         "textcolor": "white",
+...         "children": [
+...           {
+...             "id": "caeb2228-777e-4304-abeb-99c6e7e0747d",
+...             "type": "sidecar",
+...             "title": "ipa",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:49:49.779Z",
+...             "modified_date": "2019-04-27T03:49:49.779Z"
+...           },
+...           {
+...             "id": "3edda7bb-fe39-43c4-81d1-e19dc3ffb4a2",
+...             "type": "sidecar",
+...             "title": "dipa",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:49:53.555Z",
+...             "modified_date": "2019-04-27T03:49:53.555Z"
+...           },
+...           {
+...             "id": "0b6a40aa-2838-40b3-8b68-266c4895c822",
+...             "type": "sidecar",
+...             "title": "pale_ale",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:49:58.185Z",
+...             "modified_date": "2019-04-27T03:49:58.185Z"
+...           }
+...         ],
+...         "expanded": True
+...       },
+...       {
+...         "uuid": "ad239b31-32aa-4144-8e07-c31cc88e3748",
+...         "title": "Belgian Styles",
+...         "color": "#61DD61",
+...         "textcolor": "white",
+...         "children": [
+...           {
+...             "id": "f88891d6-46d0-4bae-afb8-ff8e6f941a18",
+...             "type": "sidecar",
+...             "title": "witbier",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:16.432Z",
+...             "modified_date": "2019-04-27T03:50:16.432Z"
+...           },
+...           {
+...             "id": "566a9d07-33ab-4b0c-9805-0f91058584c2",
+...             "type": "sidecar",
+...             "title": "dubbel",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:20.835Z",
+...             "modified_date": "2019-04-27T03:50:20.835Z"
+...           },
+...           {
+...             "id": "e19ec088-1d24-4421-ba29-061d4b3bd501",
+...             "type": "sidecar",
+...             "title": "tripel",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:23.721Z",
+...             "modified_date": "2019-04-27T03:50:23.721Z"
+...           }
+...         ],
+...         "expanded": True
+...       },
+...       {
+...         "uuid": "f39aef49-48a4-4708-b039-dd521b0ffeb0",
+...         "title": "Beer",
+...         "color": "#61DD61",
+...         "textcolor": "white",
+...         "children": [
+...           {
+...             "id": "956d720e-5608-4efe-82fd-5f86b39109f0",
+...             "type": "sidecar",
+...             "title": "ipa",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:34.256Z",
+...             "modified_date": "2019-04-27T03:50:34.256Z"
+...           },
+...           {
+...             "id": "b0346809-75d5-4356-b841-8fb64d1414a5",
+...             "type": "sidecar",
+...             "title": "dipa",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:37.827Z",
+...             "modified_date": "2019-04-27T03:50:37.827Z"
+...           },
+...           {
+...             "id": "3dd0b796-5917-4077-b24a-8c59528a5a88",
+...             "type": "sidecar",
+...             "title": "pale_ale",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:40.625Z",
+...             "modified_date": "2019-04-27T03:50:40.625Z"
+...           },
+...           {
+...             "id": "b79be49a-239d-4965-9d26-d587163f7c14",
+...             "type": "sidecar",
+...             "title": "witbier",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:44.558Z",
+...             "modified_date": "2019-04-27T03:50:44.558Z"
+...           },
+...           {
+...             "id": "695b5178-dec9-4679-abdc-3a771186467c",
+...             "type": "sidecar",
+...             "title": "dubbel",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:49.027Z",
+...             "modified_date": "2019-04-27T03:50:49.027Z"
+...           },
+...           {
+...             "id": "3dfa6cea-9e15-4516-85d9-0a2d0c69a80d",
+...             "type": "sidecar",
+...             "title": "tripel",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:53.251Z",
+...             "modified_date": "2019-04-27T03:50:53.251Z"
+...           }
+...         ],
+...         "expanded": True
+...       },
+...       {
+...         "uuid": "a894649e-bea5-49f2-89d3-d8f77d040f17",
+...         "title": "Whisky",
+...         "color": "#61DD61",
+...         "textcolor": "white",
+...         "children": [
+...           {
+...             "id": "c5d40c78-4f91-4251-acb1-0e58cb7a6a37",
+...             "type": "sidecar",
+...             "title": "bourbon",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:51:02.807Z",
+...             "modified_date": "2019-04-27T03:51:02.807Z"
+...           },
+...           {
+...             "id": "d621d18a-a3f5-4511-bb86-0d7cd7ad8c34",
+...             "type": "sidecar",
+...             "title": "rye",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:51:06.099Z",
+...             "modified_date": "2019-04-27T03:51:06.099Z"
+...           },
+...           {
+...             "id": "9e2da49e-70ec-46f9-9f6c-e1fc20d0c952",
+...             "type": "sidecar",
+...             "title": "scotch",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:51:08.660Z",
+...             "modified_date": "2019-04-27T03:51:08.660Z"
+...           }
+...         ],
+...         "expanded": True
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+Appending
+---------
+
+With the append parameter set to True, we shouldn't overwrite the old tags.
+
+* Without append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "American Styles",
+...         "children": [
+...           {
+...             "title": "ipa"
+...           },
+...           {
+...             "title": "dipa"
+...           },
+...           {
+...             "title": "pale_ale"
+...           }
+...         ]
+...       }
+...   ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "Whisky",
+...         "children": [
+...           {
+...             "title": "bourbon"
+...           },
+...           {
+...             "title": "rye"
+...           },
+...           {
+...             "title": "scotch"
+...           }
+...         ]
+...       }
+...   ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+* With append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "American Styles",
+...         "children": [
+...           {
+...             "title": "ipa"
+...           },
+...           {
+...             "title": "dipa"
+...           },
+...           {
+...             "title": "pale_ale"
+...           }
+...         ]
+...       }
+...   ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "Whisky",
+...         "children": [
+...           {
+...             "title": "bourbon"
+...           },
+...           {
+...             "title": "rye"
+...           },
+...           {
+...             "title": "scotch"
+...           }
+...         ]
+...       }
+...   ]
+...   }, True)
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+Incorrect Cases
+---------------
+
+* Out of date app version (i.e. trying to load a file produced by a newer version).  These should warn but not automatically fail, since we have no way of knowing if it's actually out of date.
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "9.9.9",
+...     "settingsVersion": 3,
+...     "tagGroups": []
+...   })
+True
+
+* Out of date settings version
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 9,
+...     "tagGroups": []
+...   })
+True
+
+Bad Case
+--------
+
+Error-handling for key errors ensures it will actually fail if an updated format changes things.
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_tagspaces_format(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tag_groups": []
+...   })
+False
+
+AutotagicalCategories.load_categories(json_input, append=False)
+===============================================================
+
+Loads categories from JSON data.  This validates against known schemas to ensure the data structure is correct.
+
+Appending
+---------
+
+With the append parameter set to True, we shouldn't overwrite the old tags.
+
+* Without append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_categories(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+* With append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_categories(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   }, True)
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+Incorrect Cases
+---------------
+
+Multiply defined categories should work (but warn using *logging.warning*).
+
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories" : [
+...       {
+...         "name" : "American Styles",
+...         "tags" : ["dipa", "ipa", "pale_ale"]
+...       },
+...       {
+...         "name" : "American Styles",
+...         "tags" : ["american_light_lager"]
+...       }]
+...     })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['american_light_lager', 'dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+
+Bad Cases
+---------
+
+* Wrong top level structure
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(dict())
+False
+>>> test_categories.load_categories('String')
+False
+>>> test_categories.load_categories(235)
+False
+>>> test_categories.load_categories(['string', 3])
+False
+
+* Wrong file type
+
+>>> test_categories.load_categories({
+...     "file_type": "wrong",
+...     "category_file_version": "1.0",
+...     "categories" : [
+...       {
+...         "name" : "American Styles",
+...         "tags" : ["dipa", "ipa", "pale_ale"]
+...       }]
+...     })
+False
+
+* Bad versions
+
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "0.9",
+...     "categories" : [
+...       {
+...         "name" : "American Styles",
+...         "tags" : ["dipa", "ipa", "pale_ale"]
+...       }]
+...     })
+False
+
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "99.9",
+...     "categories" : [
+...       {
+...         "name" : "American Styles",
+...         "tags" : ["dipa", "ipa", "pale_ale"]
+...       }]
+...     })
+False
+
+* Missing/wrong categories
+
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories" : "string"
+...     })
+False
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories" : []
+...     })
+False
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories" : [
+...       {
+...         "wrong_key" : "is wrong",
+...       }]
+...     })
+False
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories" : [
+...       {
+...         "name" : "American Styles",
+...       }]
+...     })
+False
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories" : [
+...       {
+...         "tags" : ["dipa", "ipa", "pale_ale"]
+...       }]
+...     })
+False
+>>> test_categories.load_categories({
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories" : [
+...       {
+...         "name" : "American Styles",
+...         "tags" : [1, 2]
+...       }]
+...     })
+False
+
+TagSpaces Format
+----------------
+
+* Empty categories.
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": []
+...   })
+False
+
+* Correct File
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "uuid": "e3fef207-6ddf-4df7-add5-ef3e511c8f0a",
+...         "title": "American Styles",
+...         "color": "#61DD61",
+...         "textcolor": "white",
+...         "children": [
+...           {
+...             "id": "caeb2228-777e-4304-abeb-99c6e7e0747d",
+...             "type": "sidecar",
+...             "title": "ipa",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:49:49.779Z",
+...             "modified_date": "2019-04-27T03:49:49.779Z"
+...           },
+...           {
+...             "id": "3edda7bb-fe39-43c4-81d1-e19dc3ffb4a2",
+...             "type": "sidecar",
+...             "title": "dipa",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:49:53.555Z",
+...             "modified_date": "2019-04-27T03:49:53.555Z"
+...           },
+...           {
+...             "id": "0b6a40aa-2838-40b3-8b68-266c4895c822",
+...             "type": "sidecar",
+...             "title": "pale_ale",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:49:58.185Z",
+...             "modified_date": "2019-04-27T03:49:58.185Z"
+...           }
+...         ],
+...         "expanded": True
+...       },
+...       {
+...         "uuid": "ad239b31-32aa-4144-8e07-c31cc88e3748",
+...         "title": "Belgian Styles",
+...         "color": "#61DD61",
+...         "textcolor": "white",
+...         "children": [
+...           {
+...             "id": "f88891d6-46d0-4bae-afb8-ff8e6f941a18",
+...             "type": "sidecar",
+...             "title": "witbier",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:16.432Z",
+...             "modified_date": "2019-04-27T03:50:16.432Z"
+...           },
+...           {
+...             "id": "566a9d07-33ab-4b0c-9805-0f91058584c2",
+...             "type": "sidecar",
+...             "title": "dubbel",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:20.835Z",
+...             "modified_date": "2019-04-27T03:50:20.835Z"
+...           },
+...           {
+...             "id": "e19ec088-1d24-4421-ba29-061d4b3bd501",
+...             "type": "sidecar",
+...             "title": "tripel",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:23.721Z",
+...             "modified_date": "2019-04-27T03:50:23.721Z"
+...           }
+...         ],
+...         "expanded": True
+...       },
+...       {
+...         "uuid": "f39aef49-48a4-4708-b039-dd521b0ffeb0",
+...         "title": "Beer",
+...         "color": "#61DD61",
+...         "textcolor": "white",
+...         "children": [
+...           {
+...             "id": "956d720e-5608-4efe-82fd-5f86b39109f0",
+...             "type": "sidecar",
+...             "title": "ipa",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:34.256Z",
+...             "modified_date": "2019-04-27T03:50:34.256Z"
+...           },
+...           {
+...             "id": "b0346809-75d5-4356-b841-8fb64d1414a5",
+...             "type": "sidecar",
+...             "title": "dipa",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:37.827Z",
+...             "modified_date": "2019-04-27T03:50:37.827Z"
+...           },
+...           {
+...             "id": "3dd0b796-5917-4077-b24a-8c59528a5a88",
+...             "type": "sidecar",
+...             "title": "pale_ale",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:40.625Z",
+...             "modified_date": "2019-04-27T03:50:40.625Z"
+...           },
+...           {
+...             "id": "b79be49a-239d-4965-9d26-d587163f7c14",
+...             "type": "sidecar",
+...             "title": "witbier",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:44.558Z",
+...             "modified_date": "2019-04-27T03:50:44.558Z"
+...           },
+...           {
+...             "id": "695b5178-dec9-4679-abdc-3a771186467c",
+...             "type": "sidecar",
+...             "title": "dubbel",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:49.027Z",
+...             "modified_date": "2019-04-27T03:50:49.027Z"
+...           },
+...           {
+...             "id": "3dfa6cea-9e15-4516-85d9-0a2d0c69a80d",
+...             "type": "sidecar",
+...             "title": "tripel",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:50:53.251Z",
+...             "modified_date": "2019-04-27T03:50:53.251Z"
+...           }
+...         ],
+...         "expanded": True
+...       },
+...       {
+...         "uuid": "a894649e-bea5-49f2-89d3-d8f77d040f17",
+...         "title": "Whisky",
+...         "color": "#61DD61",
+...         "textcolor": "white",
+...         "children": [
+...           {
+...             "id": "c5d40c78-4f91-4251-acb1-0e58cb7a6a37",
+...             "type": "sidecar",
+...             "title": "bourbon",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:51:02.807Z",
+...             "modified_date": "2019-04-27T03:51:02.807Z"
+...           },
+...           {
+...             "id": "d621d18a-a3f5-4511-bb86-0d7cd7ad8c34",
+...             "type": "sidecar",
+...             "title": "rye",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:51:06.099Z",
+...             "modified_date": "2019-04-27T03:51:06.099Z"
+...           },
+...           {
+...             "id": "9e2da49e-70ec-46f9-9f6c-e1fc20d0c952",
+...             "type": "sidecar",
+...             "title": "scotch",
+...             "functionality": "",
+...             "description": "",
+...             "icon": "",
+...             "color": "#61DD61",
+...             "textcolor": "white",
+...             "style": "",
+...             "created_date": "2019-04-27T03:51:08.660Z",
+...             "modified_date": "2019-04-27T03:51:08.660Z"
+...           }
+...         ],
+...         "expanded": True
+...       }
+...     ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+Appending
+---------
+
+With the append parameter set to True, we shouldn't overwrite the old tags.
+
+* Without append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "American Styles",
+...         "children": [
+...           {
+...             "title": "ipa"
+...           },
+...           {
+...             "title": "dipa"
+...           },
+...           {
+...             "title": "pale_ale"
+...           }
+...         ]
+...       }
+...   ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "Whisky",
+...         "children": [
+...           {
+...             "title": "bourbon"
+...           },
+...           {
+...             "title": "rye"
+...           },
+...           {
+...             "title": "scotch"
+...           }
+...         ]
+...       }
+...   ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+* With append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "American Styles",
+...         "children": [
+...           {
+...             "title": "ipa"
+...           },
+...           {
+...             "title": "dipa"
+...           },
+...           {
+...             "title": "pale_ale"
+...           }
+...         ]
+...       }
+...   ]
+...   })
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "Whisky",
+...         "children": [
+...           {
+...             "title": "bourbon"
+...           },
+...           {
+...             "title": "rye"
+...           },
+...           {
+...             "title": "scotch"
+...           }
+...         ]
+...       }
+...   ]
+...   }, True)
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+Incorrect Cases
+---------------
+
+* Out of date app version (i.e. trying to load a file produced by a newer version).  These should warn but not automatically fail, since we have no way of knowing if it's actually out of date.
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "9.9.9",
+...     "settingsVersion": 3,
+...     "tagGroups": [
+...       {
+...         "title": "American Styles",
+...         "children": [
+...           {
+...             "title": "ipa"
+...           },
+...           {
+...             "title": "dipa"
+...           },
+...           {
+...             "title": "pale_ale"
+...           }
+...         ]
+...       }
+...   ]
+...   })
+True
+
+* Out of date settings version
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 9,
+...     "tagGroups": [
+...       {
+...         "title": "American Styles",
+...         "children": [
+...           {
+...             "title": "ipa"
+...           },
+...           {
+...             "title": "dipa"
+...           },
+...           {
+...             "title": "pale_ale"
+...           }
+...         ]
+...       }
+...   ]
+...   })
+True
+
+* Error-handling for key errors ensures it will actually fail if an updated format changes things.
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "appName": "TagSpaces",
+...     "appVersion": "3.1.4",
+...     "settingsVersion": 3,
+...     "tag_groups": []
+...   })
+False
+
+AutotagicalCategories.load_categories_from_string(json_string, append=False)
+============================================================================
+
+Loads categories from JSON data in a string.  This validates against known schemas to ensure the data structure is correct.  This function is not used at this time and will not be extensively tested (since it largely depends on well-tested functions under it).
+
+* Without append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories_from_string('{"file_type":"autotagical_tag_categories","category_file_version":"1.0","categories":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_categories_from_string('{"file_type":"autotagical_tag_categories","category_file_version":"1.0","categories":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}')
+True
+>>> print(test_categories)
+-----Categories----
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+* With append
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories_from_string('{"file_type":"autotagical_tag_categories","category_file_version":"1.0","categories":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+-----End Categories-----
+>>> test_categories.load_categories_from_string('{"file_type":"autotagical_tag_categories","category_file_version":"1.0","categories":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}', True)
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+AutotagicalCategories.load_categories_from_file(file_path, append=False)
+========================================================================
+
+Loads categories from JSON data in a file.  This validates against known schemas to ensure the data structure is correct.
+
+Normal Usage
+------------
+
+* autotagical format
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories_from_file(os.path.join('tests', 'files', 'test_categories.json'))
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+* TagSpaces format
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories_from_file(os.path.join('tests', 'files', 'test_tagspaces_tag_library.json'))
+True
+>>> print(test_categories)
+-----Categories----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Categories-----
+
+Bad Cases
+---------
+
+* autotagical format
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories_from_file(os.path.join('tests', 'files', 'bad_test_categories.json'))
+False
+
+* TagSpaces format
+
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories_from_file(os.path.join('tests', 'files', 'bad_test_categories.json'))
+False

@@ -1,0 +1,679 @@
+============================
+autotagical.moving
+============================
+
+Setup
+=====
+Initialize structures, silence logging, and import all functions.
+
+Logging
+-------
+Silence logging, as a lot of tests will deliberate do things that result in errors/warnings.
+
+>>> import logging
+>>> logging.basicConfig(level=logging.CRITICAL)
+
+Test Categories
+---------------
+Set up a basic categories object.
+
+>>> from autotagical.categories import AutotagicalCategories
+>>> test_categories = AutotagicalCategories()
+>>> test_categories.load_categories(
+...   {
+...     "file_type": "autotagical_tag_categories",
+...     "category_file_version": "1.0",
+...     "categories": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale",
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+
+Test Tags
+---------
+Set up basic tags.
+
+>>> test_tags_1 = ['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+>>> test_tags_2 = ['pale_ale', 'ale', 'refrigerated', 'cascade']
+>>> test_tags_3 = ['tripel', 'ale', 'refrigerated']
+>>> test_tags_4 = ['scotch', 'laphroaig', 'islay']
+>>> test_tags_5 = ['bourbon', '23_year', 'pappys']
+>>> test_tags_6 = ['non-alcoholic', 'refrigerated']
+
+Test Files
+----------
+>>> from autotagical.file_handler import AutotagicalFile
+>>> import os
+>>> test_file_1 = AutotagicalFile(
+...   name='Test1999',
+...   raw_name='Test1999[dipa ale refrigerated simcoe ctz centennial].txt',
+...   original_path=os.path.join('tests', 'files', 'Test1999[dipa ale refrigerated simcoe ctz centennial].txt'),
+...   extension='.txt',
+...   tags='[dipa ale refrigerated simcoe ctz centennial]',
+...   tag_array=['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+... )
+>>> test_file_2 = AutotagicalFile(
+...   name='Test1532',
+...   raw_name='Test1532[pale_ale ale refrigerated cascade].txt',
+...   original_path=os.path.join('tests', 'files', 'Test1532[pale_ale ale refrigerated cascade].txt'),
+...   extension='.txt',
+...   tags='[pale_ale ale refrigerated cascade]',
+...   tag_array=['pale_ale', 'ale', 'refrigerated', 'cascade']
+... )
+>>> test_file_3 = AutotagicalFile(
+...   name='Affligem Tripel',
+...   raw_name='Affligem Tripel[tripel ale refrigerated].txt',
+...   original_path=os.path.join('tests', 'files', 'Affligem Tripel[tripel ale refrigerated].txt'),
+...   extension='.txt',
+...   tags='[tripel ale refrigerated]',
+...   tag_array=['tripel', 'ale', 'refrigerated']
+... )
+>>> test_file_4 = AutotagicalFile(
+...   name='also this',
+...   raw_name='also this[scotch laphroaig islay].txt',
+...   original_path=os.path.join('tests', 'files', 'also this[scotch laphroaig islay].txt'),
+...   extension='.txt',
+...   tags='[scotch laphroaig islay]',
+...   tag_array = ['scotch', 'laphroaig', 'islay']
+... )
+>>> test_file_5 = AutotagicalFile(
+...   name='Pappys Family Reserve',
+...   raw_name='Pappys Family Reserve[bourbon 23_year pappys].txt',
+...   original_path=os.path.join('tests', 'files', 'Pappys Family Reserve[bourbon 23_year pappys].txt'),
+...   extension='.txt',
+...   tags='[bourbon 23_year pappys]',
+...   tag_array=['bourbon', '23_year', 'pappys']
+... )
+>>> test_file_6 = AutotagicalFile(
+...   name='Water',
+...   raw_name='Water[non-alcoholic refrigerated].txt',
+...   original_path=os.path.join('tests', 'files', 'Water[non-alcoholic refrigerated].txt'),
+...   extension='.txt',
+...   tags='[non-alcoholic refrigerated]',
+...   tag_array=['non-alcoholic', 'refrigerated']
+... )
+>>> files = [test_file_1, test_file_2, test_file_3, test_file_4, test_file_5, test_file_6]
+
+Test Filters
+------------
+Set up filters for testing.
+
+>>> filter_1 = {
+...   "filters" : ["/C|Beer"],
+...   "subfolder" : "Beer Bottles",
+...   "subfilters" : [
+...     {
+...       "filters" : ["/C|Belgian Styles"],
+...       "subfolder" : "",
+...       "subfilters" : []
+...     },
+...     {
+...       "filters" : ["dipa"],
+...       "subfolder" : "DIPAs",
+...       "subfilters" : [
+...         {
+...           "filters" : ["motueka"],
+...           "subfolder" : "Motueka",
+...           "subfilters" : []
+...         }
+...       ]
+...     }
+...   ]
+... }
+>>> filter_2 = {
+...   "filters" : ["/C|Whisky"],
+...   "subfolder" : "Whisky Bottles",
+...   "subfilters" : [
+...     {
+...       "filters" : ["highland", "islay"],
+...       "subfolder" : "Scotch Bottles",
+...       "subfilters" : [
+...         {
+...           "filters" : ["islay"],
+...           "subfolder" : "Islay",
+...           "subfilters" : []
+...         }
+...       ]
+...     },
+...     {
+...       "filters" : ["bourbon"],
+...       "subfolder" : "Bourbon Bottles",
+...       "subfilters" : []
+...     }
+...   ]
+... }
+>>> filter_3 = {
+...   "filters" : ["/C|Beer"],
+...   "subfolder" : "Beers",
+...   "subfilters" : [
+...     {
+...       "filters" : ["/C|Belgian Styles"],
+...       "subfolder" : "Belgians",
+...       "subfilters" : []
+...     },
+...     {
+...       "filters" : ["tripel"],
+...       "subfolder" : "Tripels",
+...       "subfilters" : [
+...         {
+...           "filters" : ["american"],
+...           "subfolder" : "",
+...           "subfilters" : []
+...         },
+...       ]
+...     },
+...     {
+...       "filters" : ["dipa"],
+...       "subfolder" : "DIPAs",
+...       "subfilters" : []
+...     }
+...   ]
+... }
+>>> filter_4 = {
+...   "filters" : ["/C|Beer"],
+...   "subfolder" : "Beers",
+...   "subfilters" : [
+...     {
+...       "filters" : ["tripel"],
+...       "subfolder" : "Tripels",
+...       "subfilters" : [
+...         {
+...           "filters" : ["american"],
+...           "subfolder" : "",
+...           "subfilters" : []
+...         },
+...       ]
+...     },
+...     {
+...       "filters" : ["/C|Belgian Styles"],
+...       "subfolder" : "Belgians",
+...       "subfilters" : []
+...     },
+...     {
+...       "filters" : ["/C|American Styles"],
+...       "subfolder" : "American Styles",
+...       "subfilters" : [
+...         {
+...           "filters" : ["american_light_lager"],
+...           "subfolder" : "ALL",
+...           "subfilters" : []
+...         }
+...       ]
+...     },
+...     {
+...       "filters" : ["dipa"],
+...       "subfolder" : "DIPA Styles",
+...       "subfilters" : [
+...         {
+...           "filters" : ["motueka"],
+...           "subfolder" : "Motueka",
+...           "subfilters" : []
+...         }
+...       ]
+...     }
+...   ]
+... }
+>>> filter_5 = {
+...   "filters" : ["/C|Beer"],
+...   "subfolder" : "Beers",
+...   "subfilters" : [
+...     {
+...       "filters" : ["tripel"],
+...       "subfolder" : "Tripels",
+...       "subfilters" : []
+...     },
+...     {
+...       "filters" : ["/C|Belgian Styles"],
+...       "subfolder" : "Belgians",
+...       "subfilters" : []
+...     },
+...     {
+...       "filters" : ["dipa"],
+...       "subfolder" : "DIPA Styles",
+...       "subfilters" : [
+...         {
+...           "filters" : ["motueka"],
+...           "subfolder" : "Motueka",
+...           "subfilters" : []
+...         }
+...       ]
+...     },
+...     {
+...       "filters" : ["/C|American Styles"],
+...       "subfolder" : "American Styles",
+...       "subfilters" : [
+...         {
+...           "filters" : ["american_light_lager"],
+...           "subfolder" : "ALL",
+...           "subfilters" : []
+...         }
+...       ]
+...     }
+...   ]
+... }
+>>> filter_6 = {
+...   "filters" : ["/C|Beer"],
+...   "subfolder" : "Beers",
+...   "subfilters" : [
+...     {
+...       "filters" : ["/C|Belgian Styles"],
+...       "subfolder" : "Belgians",
+...       "subfilters" : []
+...     },
+...     {
+...       "filters" : ["tripel"],
+...       "subfolder" : "Tripels",
+...       "subfilters" : []
+...     },
+...     {
+...       "filters" : ["dipa"],
+...       "subfolder" : "DIPA Styles",
+...       "subfilters" : [
+...         {
+...           "filters" : ["motueka"],
+...           "subfolder" : "Motueka",
+...           "subfilters" : []
+...         }
+...       ]
+...     },
+...     {
+...       "filters" : ["/C|American Styles"],
+...       "subfolder" : "American Styles",
+...       "subfilters" : [
+...         {
+...           "filters" : ["american_light_lager"],
+...           "subfolder" : "ALL",
+...           "subfilters" : []
+...         }
+...       ]
+...     }
+...   ]
+... }
+
+Import Functions
+----------------
+
+>>> from autotagical.moving import process_filter_level, generate_path, determine_destination
+
+process_filter_level(tag_array, filter_level, categories)
+=========================================================
+
+Takes a file's tag array and a single filter level and determines the contribution to path that it and all sublevels contribute by operating recursively.
+
+Edge Cases
+----------
+
+* Empty Filter (should throw an exception)
+
+>>> process_filter_level(test_tags_1, {"filters" : [""], "subfolder" : "", "subfilters" : []}, test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter encountered: Completely empty!
+>>> process_filter_level(test_tags_1, {"filters" : [], "subfolder" : "", "subfilters" : []}, test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter array encountered: Completely empty!
+
+* Empty Tags
+
+>>> process_filter_level([], filter_1, test_categories)
+(False, '')
+
+* Both Empty
+
+>>> process_filter_level([], {"filters" : [""], "subfolder" : "", "subfilters" : []}, test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter encountered: Completely empty!
+>>> process_filter_level([], {"filters" : [], "subfolder" : "", "subfilters" : []}, test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter array encountered: Completely empty!
+>>> process_filter_level([""], {"filters" : [""], "subfolder" : "", "subfilters" : []}, test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter encountered: Completely empty!
+>>> process_filter_level([""], {"filters" : [], "subfolder" : "", "subfilters" : []}, test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter array encountered: Completely empty!
+
+* Empty Tags with All (/\*|) operator
+
+>>> process_filter_level([], {"filters" : ["/*|"], "subfolder" : "", "subfilters" : []}, test_categories)
+(True, '')
+>>> process_filter_level([""], {"filters" : ["/*|"], "subfolder" : "", "subfilters" : []}, test_categories)
+(True, '')
+
+Base Cases
+----------
+
+* No matches at all
+
+>>> process_filter_level(test_tags_1, filter_2, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_2, filter_2, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_3, filter_2, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_4, filter_1, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_4, filter_3, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_5, filter_1, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_5, filter_3, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_6, filter_1, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_6, filter_2, test_categories)
+(False, '')
+>>> process_filter_level(test_tags_6, filter_3, test_categories)
+(False, '')
+
+* Fully specified without subfolder
+
+>>> process_filter_level(test_tags_3, filter_1, test_categories)
+(True, 'Beer Bottles')
+
+* Fully specified with subfolder
+
+>>> process_filter_level(test_tags_4, filter_2, test_categories)
+(True, 'Whisky Bottles/Scotch Bottles/Islay')
+>>> process_filter_level(test_tags_5, filter_2, test_categories)
+(True, 'Whisky Bottles/Bourbon Bottles')
+
+* Not fully specified
+
+>>> process_filter_level(test_tags_1, filter_1, test_categories)
+(False, 'Beer Bottles/DIPAs')
+>>> process_filter_level(test_tags_2, filter_1, test_categories)
+(False, 'Beer Bottles')
+
+Filter Priority
+---------------
+
+Confirm filter priority works
+
+* Full match over partial
+
+>>> process_filter_level(test_tags_3, filter_3, test_categories)
+(True, 'Beers/Belgians')
+>>> process_filter_level(test_tags_3, filter_4, test_categories)
+(True, 'Beers/Belgians')
+
+* For full matches
+
+>>> process_filter_level(test_tags_3, filter_5, test_categories)
+(True, 'Beers/Tripels')
+>>> process_filter_level(test_tags_3, filter_6, test_categories)
+(True, 'Beers/Belgians')
+
+* For partial matches
+
+>>> process_filter_level(test_tags_1, filter_4, test_categories)
+(False, 'Beers/American Styles')
+>>> process_filter_level(test_tags_1, filter_5, test_categories)
+(False, 'Beers/DIPA Styles')
+
+generate_path(tag_array, movement_schema, categories)
+=====================================================
+
+Takes a file's tag array and determines how to organize it according to a movement schema.
+
+Edge Cases
+----------
+
+* Empty Filter (should throw an exception)
+
+>>> generate_path(test_tags_1, [{"filters" : [""], "subfolder" : "", "subfilters" : []}], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter encountered: Completely empty!
+>>> generate_path(test_tags_1, [{"filters" : [], "subfolder" : "", "subfilters" : []}], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter array encountered: Completely empty!
+
+* Empty Tags
+
+>>> generate_path([], [filter_1, filter_2], test_categories)
+(True, '')
+
+* Both Empty
+
+>>> generate_path([], [{"filters" : [""], "subfolder" : "", "subfilters" : []}], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter encountered: Completely empty!
+>>> generate_path([], [{"filters" : [], "subfolder" : "", "subfilters" : []}], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter array encountered: Completely empty!
+>>> generate_path([""], [{"filters" : [""], "subfolder" : "", "subfilters" : []}], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter encountered: Completely empty!
+>>> generate_path([""], [{"filters" : [], "subfolder" : "", "subfilters" : []}], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed filter array encountered: Completely empty!
+>>> generate_path([""], [], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.schema.SchemaError: Completely empty movement schema!
+>>> generate_path([], [], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.schema.SchemaError: Completely empty movement schema!
+
+
+* Empty Tags with All (/\*|) operator
+
+>>> generate_path([], [{"filters" : ["/*|"], "subfolder" : "", "subfilters" : []}], test_categories)
+(False, '')
+>>> generate_path([""], [{"filters" : ["/*|"], "subfolder" : "", "subfilters" : []}], test_categories)
+(False, '')
+
+Base Cases
+----------
+
+* No matches at all
+
+>>> generate_path(test_tags_1, [filter_2], test_categories)
+(True, '')
+>>> generate_path(test_tags_2, [filter_2], test_categories)
+(True, '')
+>>> generate_path(test_tags_3, [filter_2], test_categories)
+(True, '')
+>>> generate_path(test_tags_4, [filter_1], test_categories)
+(True, '')
+>>> generate_path(test_tags_5, [filter_1], test_categories)
+(True, '')
+>>> generate_path(test_tags_6, [filter_1], test_categories)
+(True, '')
+>>> generate_path(test_tags_6, [filter_2], test_categories)
+(True, '')
+
+* Fully specified without subfolder
+
+>>> generate_path(test_tags_3, [filter_1, filter_2], test_categories)
+(False, 'Beer Bottles')
+
+* Fully specified with subfolder
+
+>>> generate_path(test_tags_4, [filter_1, filter_2], test_categories)
+(False, 'Whisky Bottles/Scotch Bottles/Islay')
+>>> generate_path(test_tags_5, [filter_1, filter_2], test_categories)
+(False, 'Whisky Bottles/Bourbon Bottles')
+
+* Not fully specified
+
+>>> generate_path(test_tags_1, [filter_1, filter_2], test_categories)
+(False, 'Beer Bottles/DIPAs')
+>>> generate_path(test_tags_2, [filter_1, filter_2], test_categories)
+(False, 'Beer Bottles')
+
+Filter Priority
+---------------
+
+Confirm filter priority works
+
+* Full match over partial
+
+>>> generate_path(test_tags_1, [filter_1, filter_2, filter_3], test_categories)
+(False, 'Beers/DIPAs')
+>>> generate_path(test_tags_1, [filter_3, filter_2, filter_1], test_categories)
+(False, 'Beers/DIPAs')
+
+* For full matches
+
+>>> generate_path(test_tags_3, [filter_1, filter_2, filter_3], test_categories)
+(False, 'Beer Bottles')
+>>> generate_path(test_tags_3, [filter_3, filter_2, filter_1], test_categories)
+(False, 'Beers/Belgians')
+
+* For partial matches
+
+>>> generate_path(test_tags_1, [filter_1, filter_2, filter_4], test_categories)
+(False, 'Beer Bottles/DIPAs')
+>>> generate_path(test_tags_1, [filter_4, filter_2, filter_1], test_categories)
+(False, 'Beers/American Styles')
+
+determine_destination(file_list, movement_schema, categories)
+=============================================================
+Takes a list of files and processes how they should be organized in directories according to a
+schema.
+
+Edge Cases
+----------
+
+* Empty file list
+
+>>> determine_destination([], [filter_1, filter_2], test_categories)
+[]
+
+* Empty filters
+
+>>> determine_destination(files, [], test_categories)
+Traceback (most recent call last):
+    ...
+autotagical.schema.SchemaError: Completely empty movement schema!
+
+* Both empty (returns empty list, because why fail if you don't have to)
+
+>>> determine_destination([], [], test_categories)
+[]
+
+Normal Function
+---------------
+
+>>> output = determine_destination(files, [filter_1, filter_2], test_categories)
+>>> for f in output:
+...     print(f)
+-----File-----
+  Destination: "Beer Bottles/DIPAs"
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1999"
+  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Output Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Rename Failed: False
+  Tags: "[dipa ale refrigerated simcoe ctz centennial]"
+  Tag Array: ['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
+-----End File-----
+-----File-----
+  Destination: "Beer Bottles"
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Test1532"
+  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Output Name: "Test1532[pale_ale ale refrigerated cascade].txt"
+  Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
+  Rename Failed: False
+  Tags: "[pale_ale ale refrigerated cascade]"
+  Tag Array: ['pale_ale', 'ale', 'refrigerated', 'cascade']
+-----End File-----
+-----File-----
+  Destination: "Beer Bottles"
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Affligem Tripel"
+  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
+  Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
+  Rename Failed: False
+  Tags: "[tripel ale refrigerated]"
+  Tag Array: ['tripel', 'ale', 'refrigerated']
+-----End File-----
+-----File-----
+  Destination: "Whisky Bottles/Scotch Bottles/Islay"
+  Extension: ".txt"
+  Move Failed: False
+  Name: "also this"
+  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Output Name: "also this[scotch laphroaig islay].txt"
+  Raw Name: "also this[scotch laphroaig islay].txt"
+  Rename Failed: False
+  Tags: "[scotch laphroaig islay]"
+  Tag Array: ['scotch', 'laphroaig', 'islay']
+-----End File-----
+-----File-----
+  Destination: "Whisky Bottles/Bourbon Bottles"
+  Extension: ".txt"
+  Move Failed: False
+  Name: "Pappys Family Reserve"
+  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Rename Failed: False
+  Tags: "[bourbon 23_year pappys]"
+  Tag Array: ['bourbon', '23_year', 'pappys']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ".txt"
+  Move Failed: True
+  Name: "Water"
+  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Output Name: "Water[non-alcoholic refrigerated].txt"
+  Raw Name: "Water[non-alcoholic refrigerated].txt"
+  Rename Failed: False
+  Tags: "[non-alcoholic refrigerated]"
+  Tag Array: ['non-alcoholic', 'refrigerated']
+-----End File-----
