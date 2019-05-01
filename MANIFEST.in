@@ -1,3 +1,2 @@
 include json_schema/*
 include LICENSE.md
-recursive-exclude tests *

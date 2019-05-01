@@ -46,7 +46,7 @@ setuptools.setup(
                  "by TagSpaces) according to user-defined schemas."),
     license="GPLv3",
     keywords="file sort tag rename tagging tagspaces",
-    url="http://packages.python.org/autotagical",
+    url="https://github.com/SiriusStarr/autotagical",
     packages=['autotagical'],
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
