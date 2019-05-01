@@ -21,4 +21,4 @@ autotagical [-h] [-V] [-C <config file>] [-H] [-i <input path>]
 
 ######################### Constants #########################
 
-__version__ = '1.0.0rc2' # Define the current version
+__version__ = '1.0.0rc3' # Define the current version

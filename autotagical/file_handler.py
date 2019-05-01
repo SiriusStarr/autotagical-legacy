@@ -352,6 +352,9 @@ class AutotagicalFileHandler:
         Constructor.  Initialize attributes and compiles tag pattern regexes.
     load_ignore_file(path)
         Loads in ignore patterns in the specified ignore file, appending them to known patterns.
+    check_new(self, name, path):
+        Takes a full path to a file and determines whether it represents a new file or one already
+        loaded.
     load_folder(input_folder, recurse=False, process_hidden=False)
         Load in all appropriate files in a given folder.
     get_file_list()
@@ -414,6 +417,33 @@ class AutotagicalFileHandler:
             logging.error('An unhandled execption occured while loading ignore file.')
         return False
 
+    def check_new(self, name, path):
+        '''
+        Takes a full path to a file and determines whether it represents a new file or one already
+        loaded.
+
+        Parameters
+        ----------
+        name : str
+            The full name of the file.
+        path : str
+            The path to the file (including file name)
+
+        Returns
+        -------
+        bool
+            True if file has not been loaded before, False otherwise.
+        '''
+        # Check all known files
+        for file in self.__file_list:
+            # Only need to do more serious checking if file names match
+            if file.raw_name == name:
+                if os.path.samefile(file.original_path, path):
+                    logging.info('Skipping double processing the file at: ' + path)
+                    return False
+        return True
+
+
     def load_folder(self, input_folder, recurse=False, process_hidden=False):
         '''
         Load in all appropriate files in a given folder.
@@ -433,7 +463,7 @@ class AutotagicalFileHandler:
         bool
             True if load was successful, False otherwise.
         '''
-        try:
+        try: # pylint: disable=too-many-nested-blocks
             if recurse:
                 # If loading recursively, use os.walk
                 for root, dirs, files in os.walk(input_folder):
@@ -444,25 +474,29 @@ class AutotagicalFileHandler:
                         dirs[:] = [d for d in dirs if not d[0] == '.']
                     # Try to load each file and append it to the file list
                     for file in files:
-                        to_append = AutotagicalFile.load_file(file, os.path.join(root, file),
-                                                              self.__tag_patterns,
-                                                              self.__ignore_patterns)
-                        # If file was loaded, append it to the list
-                        if to_append:
-                            self.__file_list.append(to_append)
+                        # Only load file if it hasn't been encountered before
+                        if self.check_new(file, os.path.join(root, file)):
+                            to_append = AutotagicalFile.load_file(file, os.path.join(root, file),
+                                                                  self.__tag_patterns,
+                                                                  self.__ignore_patterns)
+                            # If file was loaded, append it to the list
+                            if to_append:
+                                self.__file_list.append(to_append)
             else:
                 # If not loading recursively, use os.scandir
                 with os.scandir(input_folder) as entries:
                     for entry in entries:
                         # For each entry, check if it's a file and not hidden (or processing hidden)
                         if entry.is_file() and (process_hidden or not entry.name.startswith('.')):
-                            # Try to load it in and append it.
-                            to_append = AutotagicalFile.load_file(entry.name, entry.path,
-                                                                  self.__tag_patterns,
-                                                                  self.__ignore_patterns)
-                            # If file was loaded, append it to the list
-                            if to_append:
-                                self.__file_list.append(to_append)
+                            # Only load file if it hasn't been encountered before
+                            if self.check_new(entry.name, entry.path):
+                                # Try to load it in and append it.
+                                to_append = AutotagicalFile.load_file(entry.name, entry.path,
+                                                                      self.__tag_patterns,
+                                                                      self.__ignore_patterns)
+                                # If file was loaded, append it to the list
+                                if to_append:
+                                    self.__file_list.append(to_append)
         except FileNotFoundError as err:
             logging.error('Error with input folder: ' + str(err))
             return False

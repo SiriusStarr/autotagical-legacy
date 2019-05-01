@@ -734,13 +734,13 @@ Normal Function
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
 >>> output = test_namer.determine_names(files, test_categories)
 >>> for f in output:
-...     print(f)
+...     print(f) #doctest: +ELLIPSIS
 -----File-----
   Destination: ""
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "tests...files...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Beer Bottle 1"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -752,7 +752,7 @@ Normal Function
   Extension: ".txt"
   Move Failed: False
   Name: "Test1532"
-  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Original Path: "tests...files...Test1532[pale_ale ale refrigerated cascade].txt"
   Output Name: "Beer Bottle 2"
   Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Rename Failed: False
@@ -764,7 +764,7 @@ Normal Function
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "tests...files...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -776,7 +776,7 @@ Normal Function
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Original Path: "tests...files...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: True
@@ -788,7 +788,7 @@ Normal Function
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "tests...files...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -800,7 +800,7 @@ Normal Function
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Original Path: "tests...files...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
@@ -816,13 +816,13 @@ Force Name
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
 >>> output = test_namer.determine_names(files, test_categories, True, True)
 >>> for f in output:
-...     print(f)
+...     print(f) #doctest: +ELLIPSIS
 -----File-----
   Destination: ""
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "tests...files...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Beer Bottle 1"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -834,7 +834,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "Test1532"
-  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Original Path: "tests...files...Test1532[pale_ale ale refrigerated cascade].txt"
   Output Name: "Beer Bottle 2"
   Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Rename Failed: False
@@ -846,7 +846,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "tests...files...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Beer Bottle 3"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -858,7 +858,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Original Path: "tests...files...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: True
@@ -870,7 +870,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "tests...files...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: True
@@ -882,7 +882,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Original Path: "tests...files...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: True
@@ -895,13 +895,13 @@ Force Name
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
 >>> output = test_namer.determine_names(files, test_categories, True, False)
 >>> for f in output:
-...     print(f)
+...     print(f) #doctest: +ELLIPSIS
 -----File-----
   Destination: ""
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "tests...files...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Beer Bottle 1"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -913,7 +913,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "Test1532"
-  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Original Path: "tests...files...Test1532[pale_ale ale refrigerated cascade].txt"
   Output Name: "Beer Bottle 2"
   Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Rename Failed: False
@@ -925,7 +925,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "tests...files...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Beer Bottle 3"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -937,7 +937,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Original Path: "tests...files...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: True
@@ -949,7 +949,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "tests...files...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -961,7 +961,7 @@ Force Name
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Original Path: "tests...files...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
@@ -978,13 +978,13 @@ Clear Occurrences
 >>> output = test_namer.determine_names(files, test_categories, True, True, False)
 >>> output = test_namer.determine_names(files, test_categories, True, True, False)
 >>> for f in output:
-...     print(f)
+...     print(f) #doctest: +ELLIPSIS
 -----File-----
   Destination: ""
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "tests...files...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Beer Bottle 4"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -996,7 +996,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "Test1532"
-  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Original Path: "tests...files...Test1532[pale_ale ale refrigerated cascade].txt"
   Output Name: "Beer Bottle 5"
   Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Rename Failed: False
@@ -1008,7 +1008,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "tests...files...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Beer Bottle 6"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -1020,7 +1020,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Original Path: "tests...files...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: True
@@ -1032,7 +1032,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "tests...files...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: True
@@ -1044,7 +1044,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Original Path: "tests...files...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: True
@@ -1059,13 +1059,13 @@ Clear Occurrences
 >>> output = test_namer.determine_names(files, test_categories, True, True, True)
 >>> output = test_namer.determine_names(files, test_categories, True, True, True)
 >>> for f in output:
-...     print(f)
+...     print(f) #doctest: +ELLIPSIS
 -----File-----
   Destination: ""
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "tests...files...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Beer Bottle 1"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -1077,7 +1077,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "Test1532"
-  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Original Path: "tests...files...Test1532[pale_ale ale refrigerated cascade].txt"
   Output Name: "Beer Bottle 2"
   Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Rename Failed: False
@@ -1089,7 +1089,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "tests...files...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Beer Bottle 3"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -1101,7 +1101,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Original Path: "tests...files...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: True
@@ -1113,7 +1113,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "tests...files...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: True
@@ -1125,7 +1125,7 @@ Clear Occurrences
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Original Path: "tests...files...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: True

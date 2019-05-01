@@ -407,22 +407,22 @@ Base Cases
 
 * Fully specified without subfolder
 
->>> process_filter_level(test_tags_3, filter_1, test_categories)
-(True, 'Beer Bottles')
+>>> process_filter_level(test_tags_3, filter_1, test_categories) == (True, os.path.join('Beer Bottles'))
+True
 
 * Fully specified with subfolder
 
->>> process_filter_level(test_tags_4, filter_2, test_categories)
-(True, 'Whisky Bottles/Scotch Bottles/Islay')
->>> process_filter_level(test_tags_5, filter_2, test_categories)
-(True, 'Whisky Bottles/Bourbon Bottles')
+>>> process_filter_level(test_tags_4, filter_2, test_categories) == (True, os.path.join('Whisky Bottles', 'Scotch Bottles', 'Islay'))
+True
+>>> process_filter_level(test_tags_5, filter_2, test_categories) == (True, os.path.join('Whisky Bottles', 'Bourbon Bottles'))
+True
 
 * Not fully specified
 
->>> process_filter_level(test_tags_1, filter_1, test_categories)
-(False, 'Beer Bottles/DIPAs')
->>> process_filter_level(test_tags_2, filter_1, test_categories)
-(False, 'Beer Bottles')
+>>> process_filter_level(test_tags_1, filter_1, test_categories) == (False, os.path.join('Beer Bottles', 'DIPAs'))
+True
+>>> process_filter_level(test_tags_2, filter_1, test_categories) == (False, os.path.join('Beer Bottles'))
+True
 
 Filter Priority
 ---------------
@@ -431,24 +431,24 @@ Confirm filter priority works
 
 * Full match over partial
 
->>> process_filter_level(test_tags_3, filter_3, test_categories)
-(True, 'Beers/Belgians')
->>> process_filter_level(test_tags_3, filter_4, test_categories)
-(True, 'Beers/Belgians')
+>>> process_filter_level(test_tags_3, filter_3, test_categories) == (True, os.path.join('Beers', 'Belgians'))
+True
+>>> process_filter_level(test_tags_3, filter_4, test_categories) == (True, os.path.join('Beers', 'Belgians'))
+True
 
 * For full matches
 
->>> process_filter_level(test_tags_3, filter_5, test_categories)
-(True, 'Beers/Tripels')
->>> process_filter_level(test_tags_3, filter_6, test_categories)
-(True, 'Beers/Belgians')
+>>> process_filter_level(test_tags_3, filter_5, test_categories) == (True, os.path.join('Beers', 'Tripels'))
+True
+>>> process_filter_level(test_tags_3, filter_6, test_categories) == (True, os.path.join('Beers', 'Belgians'))
+True
 
 * For partial matches
 
->>> process_filter_level(test_tags_1, filter_4, test_categories)
-(False, 'Beers/American Styles')
->>> process_filter_level(test_tags_1, filter_5, test_categories)
-(False, 'Beers/DIPA Styles')
+>>> process_filter_level(test_tags_1, filter_4, test_categories) == (False, os.path.join('Beers', 'American Styles'))
+True
+>>> process_filter_level(test_tags_1, filter_5, test_categories) == (False, os.path.join('Beers', 'DIPA Styles'))
+True
 
 generate_path(tag_array, movement_schema, categories)
 =====================================================
@@ -531,22 +531,22 @@ Base Cases
 
 * Fully specified without subfolder
 
->>> generate_path(test_tags_3, [filter_1, filter_2], test_categories)
-(False, 'Beer Bottles')
+>>> generate_path(test_tags_3, [filter_1, filter_2], test_categories) == (False, os.path.join('Beer Bottles'))
+True
 
 * Fully specified with subfolder
 
->>> generate_path(test_tags_4, [filter_1, filter_2], test_categories)
-(False, 'Whisky Bottles/Scotch Bottles/Islay')
->>> generate_path(test_tags_5, [filter_1, filter_2], test_categories)
-(False, 'Whisky Bottles/Bourbon Bottles')
+>>> generate_path(test_tags_4, [filter_1, filter_2], test_categories) == (False, os.path.join('Whisky Bottles', 'Scotch Bottles', 'Islay'))
+True
+>>> generate_path(test_tags_5, [filter_1, filter_2], test_categories) == (False, os.path.join('Whisky Bottles', 'Bourbon Bottles'))
+True
 
 * Not fully specified
 
->>> generate_path(test_tags_1, [filter_1, filter_2], test_categories)
-(False, 'Beer Bottles/DIPAs')
->>> generate_path(test_tags_2, [filter_1, filter_2], test_categories)
-(False, 'Beer Bottles')
+>>> generate_path(test_tags_1, [filter_1, filter_2], test_categories) == (False, os.path.join('Beer Bottles', 'DIPAs'))
+True
+>>> generate_path(test_tags_2, [filter_1, filter_2], test_categories) == (False, os.path.join('Beer Bottles'))
+True
 
 Filter Priority
 ---------------
@@ -555,24 +555,24 @@ Confirm filter priority works
 
 * Full match over partial
 
->>> generate_path(test_tags_1, [filter_1, filter_2, filter_3], test_categories)
-(False, 'Beers/DIPAs')
->>> generate_path(test_tags_1, [filter_3, filter_2, filter_1], test_categories)
-(False, 'Beers/DIPAs')
+>>> generate_path(test_tags_1, [filter_1, filter_2, filter_3], test_categories) == (False, os.path.join('Beers', 'DIPAs'))
+True
+>>> generate_path(test_tags_1, [filter_3, filter_2, filter_1], test_categories) == (False, os.path.join('Beers', 'DIPAs'))
+True
 
 * For full matches
 
->>> generate_path(test_tags_3, [filter_1, filter_2, filter_3], test_categories)
-(False, 'Beer Bottles')
->>> generate_path(test_tags_3, [filter_3, filter_2, filter_1], test_categories)
-(False, 'Beers/Belgians')
+>>> generate_path(test_tags_3, [filter_1, filter_2, filter_3], test_categories) == (False, os.path.join('Beer Bottles'))
+True
+>>> generate_path(test_tags_3, [filter_3, filter_2, filter_1], test_categories) == (False, os.path.join('Beers', 'Belgians'))
+True
 
 * For partial matches
 
->>> generate_path(test_tags_1, [filter_1, filter_2, filter_4], test_categories)
-(False, 'Beer Bottles/DIPAs')
->>> generate_path(test_tags_1, [filter_4, filter_2, filter_1], test_categories)
-(False, 'Beers/American Styles')
+>>> generate_path(test_tags_1, [filter_1, filter_2, filter_4], test_categories) == (False, os.path.join('Beer Bottles', 'DIPAs'))
+True
+>>> generate_path(test_tags_1, [filter_4, filter_2, filter_1], test_categories) == (False, os.path.join('Beers', 'American Styles'))
+True
 
 determine_destination(file_list, movement_schema, categories)
 =============================================================
@@ -604,13 +604,13 @@ Normal Function
 
 >>> output = determine_destination(files, [filter_1, filter_2], test_categories)
 >>> for f in output:
-...     print(f)
+...     print(f) #doctest: +ELLIPSIS
 -----File-----
-  Destination: "Beer Bottles/DIPAs"
+  Destination: "Beer Bottles...DIPAs"
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests/files/Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "tests...files...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -622,7 +622,7 @@ Normal Function
   Extension: ".txt"
   Move Failed: False
   Name: "Test1532"
-  Original Path: "tests/files/Test1532[pale_ale ale refrigerated cascade].txt"
+  Original Path: "tests...files...Test1532[pale_ale ale refrigerated cascade].txt"
   Output Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Rename Failed: False
@@ -634,7 +634,7 @@ Normal Function
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests/files/Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "tests...files...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -642,11 +642,11 @@ Normal Function
   Tag Array: ['tripel', 'ale', 'refrigerated']
 -----End File-----
 -----File-----
-  Destination: "Whisky Bottles/Scotch Bottles/Islay"
+  Destination: "Whisky Bottles...Scotch Bottles...Islay"
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests/files/also this[scotch laphroaig islay].txt"
+  Original Path: "tests...files...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: False
@@ -654,11 +654,11 @@ Normal Function
   Tag Array: ['scotch', 'laphroaig', 'islay']
 -----End File-----
 -----File-----
-  Destination: "Whisky Bottles/Bourbon Bottles"
+  Destination: "Whisky Bottles...Bourbon Bottles"
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests/files/Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "tests...files...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -670,7 +670,7 @@ Normal Function
   Extension: ".txt"
   Move Failed: True
   Name: "Water"
-  Original Path: "tests/files/Water[non-alcoholic refrigerated].txt"
+  Original Path: "tests...files...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
