@@ -14,6 +14,12 @@ e.g. [TagSpaces](https://github.com/tagspaces/tagspaces).
 pip install autotagical
 ```
 
+If you're using *autotagical* by cloning this repository, then you'll need to install the following requirements, e.g. with *pip*:
+
+* `setuptools`
+* `jsonschema>=3`
+* `packaging`
+
 ## Using autotagical
 
 ### Usage
