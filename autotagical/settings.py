@@ -253,7 +253,7 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
         # Process hidden to false only if neither CL nor file set it.
         if not cl_args.process_hidden and not file_args.process_hidden:
             self.process_hidden = False
-        logging.debug('Process hidden files/directories: ' + str(self.process_hidden))
+        logging.debug('Process hidden files/directories: %s', str(self.process_hidden))
 
         # Use input folders from CL if got them, otherwise file, otherwise fail.
         if cl_args.input_folders:
@@ -263,19 +263,19 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
         else:
             logging.error('No input folders specified!  Exiting...')
             sys.exit()
-        logging.debug('Input folders: ' + str(self.input_folders))
+        logging.debug('Input folders: %s', str(self.input_folders))
 
         # Use ignore from command line if got any, otherwise file.
         if cl_args.ignore_files:
             self.ignore_files = [arg_in[0] for arg_in in cl_args.ignore_files]
         else:
             self.ignore_files = [arg_in[0] for arg_in in file_args.ignore_files]
-        logging.debug('Ignore files: ' + str(self.ignore_files))
+        logging.debug('Ignore files: %s', str(self.ignore_files))
 
         # Recurse to false only if neither set it.
         if not cl_args.recurse and not file_args.recurse:
             self.recurse = False
-        logging.debug('Recursive input: ' + str(self.recurse))
+        logging.debug('Recursive input: %s', str(self.recurse))
 
         ########## Output Arguments ##########
         if cl_args.output_folders:
@@ -285,7 +285,7 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
                                 'Ignoring -O.')
         elif cl_args.organize or (file_args.organize and not file_args.output_folders):
             self.output_folders = [self.input_folders[0]]
-            logging.info('Organizing files into: ' + str(self.input_folders[0]))
+            logging.info('Organizing files into: %s', str(self.input_folders[0]))
         elif file_args.output_folders:
             self.output_folders = [arg_in[0] for arg_in in file_args.output_folders]
             if file_args.organize:
@@ -294,7 +294,7 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
         else:
             logging.error('Neither output folders nor -O specified!  Exiting...')
             sys.exit()
-        logging.debug('Output folders: ' + str(self.output_folders))
+        logging.debug('Output folders: %s', str(self.output_folders))
 
         ########## Schema Arguments ##########
         self.categories = AutotagicalCategories()
@@ -304,7 +304,7 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
         else:
             for arg_in in file_args.category_files:
                 self.categories.load_categories_from_file(file_path=arg_in[0], append=True)
-        logging.debug('Categories:\n' + str(self.categories))
+        logging.debug('Categories:\n%s', str(self.categories))
 
         self.schema = AutotagicalSchema()
         if cl_args.schema_files:
@@ -316,13 +316,13 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
         else:
             logging.error('No schema specified!  Exiting...')
             sys.exit()
-        logging.debug('Schema:\n' + str(self.schema))
+        logging.debug('Schema:\n%s', str(self.schema))
 
         ########## Functionality Arguments ##########
         # All match root to false only if neither set it.
         if not cl_args.all_match_root and not file_args.all_match_root:
             self.all_match_root = False
-        logging.debug('All match at root: ' + str(self.all_match_root))
+        logging.debug('All match at root: %s', str(self.all_match_root))
 
         # Keep originals to false only if neither set it.
         if not cl_args.copy and not file_args.copy:
@@ -334,17 +334,17 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
                     logging.warning('Organizing in place with the -k option will lead to '
                                     'file duplcation!  Ignoring the -k option.')
                 self.copy = False
-        logging.debug('Copy files: ' + str(self.copy))
+        logging.debug('Copy files: %s', str(self.copy))
 
         # Move only unless neither set
         if not cl_args.move_only and not file_args.move_only:
             self.move_only = False
-        logging.debug('Only move files: ' + str(self.move_only))
+        logging.debug('Only move files: %s', str(self.move_only))
 
         # Name only unless neither set
         if not cl_args.rename_only and not file_args.rename_only:
             self.rename_only = False
-        logging.debug('Only rename files: ' + str(self.rename_only))
+        logging.debug('Only rename files: %s', str(self.rename_only))
 
         # Doesn't make sense to set both name only and move only
         if self.move_only and self.rename_only:
@@ -360,7 +360,7 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
         elif self.rename_only:
             logging.warning('Received the -M option but only renaming files (-n).  '
                             'Ignoring it.')
-        logging.debug('Move unnamed files: ' + str(self.force_move))
+        logging.debug('Move unnamed files: %s', str(self.force_move))
 
         # Force name unless neither set
         if not cl_args.force_name and not file_args.force_name:
@@ -368,22 +368,22 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
         elif self.move_only:
             logging.warning('Received the -N option but only moving files (-m).  Ignoring '
                             'it.')
-        logging.debug('Try to rename all: ' + str(self.force_name))
+        logging.debug('Try to rename all: %s', str(self.force_name))
 
         # Force name fail bad unless neither set
         if not cl_args.force_name_fail_bad and not file_args.force_name_fail_bad:
             self.force_name_fail_bad = False
-        logging.debug('Force name failure counts as failure: ' + str(self.force_name_fail_bad))
+        logging.debug('Force name failure counts as failure: %s', str(self.force_name_fail_bad))
 
         # Trial run unless neither set
         if not cl_args.trial_run and not file_args.trial_run:
             self.trial_run = False
-        logging.debug('Trial run: ' + str(self.trial_run))
+        logging.debug('Trial run: %s', str(self.trial_run))
 
         # Silence Windows unless neither set
         if not cl_args.silence_windows and not file_args.silence_windows:
             self.silence_windows = False
-        logging.debug('Silence Windows-specific warnings: ' + str(self.silence_windows))
+        logging.debug('Silence Windows-specific warnings: %s', str(self.silence_windows))
 
         ########## Unsafe Arguments ##########
         # Unsafe options may only be set via command line
@@ -552,9 +552,8 @@ class AutotagicalSettings: # pylint: disable=too-many-instance-attributes
         # If found a config file anywhere, load it or fail helpfully
         if config_file_path:
             try:
-                config_file = open(config_file_path, 'r')
-                file_data = config_file.readlines()
-                config_file.close()
+                with open(config_file_path, 'r') as config_file:
+                    file_data = config_file.readlines()
             except IOError:
                 print('Could not open config file at: ' + config_file_path)
                 sys.exit()

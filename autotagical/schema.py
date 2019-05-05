@@ -146,18 +146,18 @@ class AutotagicalSchema:
 
         # Load validation schema or fail with message
         try:
-            schema_file = open(os.path.join('json_schema', 'schema_file_schema.json'), 'r')
-            self.schema_file_schema = json.load(schema_file)
-            schema_file.close()
+            with open(os.path.join(os.path.dirname(__file__), 'json_schema',
+                                   'schema_file_schema.json'), 'r') as schema_file:
+                self.schema_file_schema = json.load(schema_file)
         except IOError:
-            logging.error('Schema file schema missing or cannot be opened!  ' +
+            logging.error('Schema file schema missing or cannot be opened!  '
                           'Installation of autotagical is corrupt!')
             sys.exit()
         except json.decoder.JSONDecodeError as err:
-            logging.error('Schema file schema is wholly corrupt!  ' +
-                          'Installation of autotagical is corrupt!  JSON error:\nAt line ' +
-                          str(err.lineno) + ', column ' + str(err.colno) +
-                          ' the following error was encountered:\n' + str(err.msg))
+            logging.error('Schema file schema is wholly corrupt!  '
+                          'Installation of autotagical is corrupt!  JSON error:\nAt line %s, '
+                          'column %s the following error was encountered:\n%s', str(err.lineno),
+                          str(err.colno), str(err.msg))
             sys.exit()
         except: # pylint: disable=bare-except
             logging.error('An unhandled execption occured while loading schema file schema.')
@@ -258,9 +258,8 @@ class AutotagicalSchema:
         try:
             validate(instance=json_input, schema=self.schema_file_schema)
         except ValidationError as err:
-            logging.error('Schema data does not match any known format.\n' +
-                          'Error: ' + str(err.message) + ' at path: ' +
-                          '->'.join([str(element) for element in err.path]))
+            logging.error('Schema data does not match any known format.\nError: %s at path: %s',
+                          str(err.message), '->'.join([str(element) for element in err.path]))
             return False
 
         # After validation only version requires checking
@@ -286,11 +285,9 @@ class AutotagicalSchema:
         self.renaming_schemas += json_input['renaming_schema']
         self.movement_schemas += json_input['movement_schema']
 
-        logging.debug('Loaded schema:\n' +
-                      'Tag Formats: ' + str(self.tag_formats) +
-                      '\nUnnamed Patterns: ' + str(self.unnamed_patterns) +
-                      '\nRenaming Schemas: ' + str(self.renaming_schemas) +
-                      '\nMovement Schemas: ' + str(self.movement_schemas))
+        logging.debug('Loaded schema:\nTag Formats: %s\nUnnamed Patterns: %s\nRenaming Schemas: %s'
+                      '\nMovement Schemas: %s', str(self.tag_formats), str(self.unnamed_patterns),
+                      str(self.renaming_schemas), str(self.movement_schemas))
         return True
 
     def load_schema_from_string(self, json_string, append=False):
@@ -313,15 +310,15 @@ class AutotagicalSchema:
         try:
             json_data = json.loads(json_string)
         except json.decoder.JSONDecodeError as err:
-            logging.error('Schema data is wholly corrupt!  JSON error:\nAt line ' +
-                          str(err.lineno) + ', column ' + str(err.colno) +
-                          ' the following error was encountered:\n' + str(err.msg))
+            logging.error('Schema data is wholly corrupt!  JSON error:\nAt line %s, column %s the '
+                          'following error was encountered:\n%s', str(err.lineno), str(err.colno),
+                          str(err.msg))
             return False
         except: # pylint: disable=bare-except
             logging.error('An unhandled execption occured while loading schema data.')
             return False
 
-        logging.debug('Loading schema data from string: ' + json_string)
+        logging.debug('Loading schema data from string: %s', json_string)
         # Pass it to load_schema to see if it actually works and load it if it does
         return self.load_schema(json_data, append)
 
@@ -343,24 +340,23 @@ class AutotagicalSchema:
         '''
         # If loading something without JSON extension, may be fine, but bad practice, so warn.
         if file_path[-5:] != '.json':
-            logging.warning('Loading a schema file with the wrong file extension: ' + file_path +
-                            '  While not strictly necessary, the extension should be ".json".')
+            logging.warning('Loading a schema file with the wrong file extension: %s  While not '
+                            'strictly necessary, the extension should be ".json".', file_path)
         try:
-            schema_file = open(file_path, 'r')
-            json_data = json.load(schema_file)
-            schema_file.close()
+            with open(file_path, 'r') as schema_file:
+                json_data = json.load(schema_file)
         except IOError:
-            logging.error('Could not open schema file at: ' + file_path)
+            logging.error('Could not open schema file at: %s', file_path)
             sys.exit()
         except json.decoder.JSONDecodeError as err:
-            logging.error('Schema file is wholly corrupt!  JSON error:\nAt line ' +
-                          str(err.lineno) + ', column ' + str(err.colno) +
-                          ' the following error was encountered:\n' + str(err.msg))
+            logging.error('Schema file is wholly corrupt!  JSON error:\nAt line %s, column %s the '
+                          'following error was encountered:\n%s', str(err.lineno), str(err.colno),
+                          str(err.msg))
             sys.exit()
         except: # pylint: disable=bare-except
             logging.error('An unhandled execption occured while loading a schema file.')
             sys.exit()
 
-        logging.debug('Loading schema data from: ' + file_path)
+        logging.debug('Loading schema data from: %s', file_path)
         # Pass it to load_schema to see if it actually works and load it if it does
         return self.load_schema(json_data, append)

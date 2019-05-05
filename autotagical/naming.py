@@ -142,7 +142,8 @@ def evaluate_iters(format_string, occurrence):
     # If there aren't any, this is bad practice.
     if '/#|' not in to_return:
         logging.warning('Encountered format string with /ITER| operator but no /#|.  This is bad '
-                        'and will lead to files not being renamed/moved properly:' + format_string)
+                        'and will lead to files not being renamed/moved properly: %s',
+                        format_string)
     # Replace and return
     return to_return.replace('/#|', str(occurrence))
 
@@ -180,10 +181,10 @@ def substitute_operators(format_string, file, categories):
     # Warn if no extension or no tags
     if '/TAGS|' not in to_return:
         logging.warning('Renamed a file without preserving tags!  This can lead to loss of '
-                        'tagging.  Based on format string: ' + format_string)
+                        'tagging.  Based on format string: %s', format_string)
     if '/EXT|' not in to_return:
-        logging.warning('Renamed a file without preserving original extension based on format '
-                        'string: ' + format_string)
+        logging.warning('Renamed a file without preserving original extension, based on format '
+                        'string: %s', format_string)
 
     # Anything that is left are simple replacement operators, so sub them all
     to_return = to_return.replace('/EXT|', file.extension)
@@ -198,7 +199,7 @@ def substitute_operators(format_string, file, categories):
 
     # If the operators evaluated to a completely blank string, this is bad, because can't use that
     if not to_return:
-        logging.error('Completely empty format string after operators: ' + format_string)
+        logging.error('Completely empty format string after operators: %s', format_string)
         raise SchemaError('Completely empty format string after operators: ' + format_string)
 
     return to_return
@@ -397,14 +398,13 @@ class AutotagicalNamer:
                 if not format_string:
                     if not unnamed and not force_fail_bad:
                         # File was manually named, and while it couldn't be renamed, that's okay
-                        logging.info('Skipped renaming of manually-named file: ' +
+                        logging.info('Skipped renaming of manually-named file:\n%s',
                                      file.original_path)
                         file.rename_failed = False
                         return_list.append(file)
                         continue
                     # Otherwise, couldn't name file and that's bad
-                    logging.warning('File did not match any renaming schema: ' +
-                                    file.raw_name)
+                    logging.warning('File did not match any renaming schema:\n%s', file.raw_name)
                     file.rename_failed = True
                     return_list.append(file)
                     continue
@@ -421,15 +421,15 @@ class AutotagicalNamer:
                     file.output_name = iterless_name
                     file.rename_failed = False
                     return_list.append(file)
-                    logging.debug('Scheduling file:\n' + file.raw_name + '\nto be renamed to:'
-                                  '\n' + iterless_name + '\nThis is the first time this name has '
-                                  'been scheduled.')
+                    logging.debug('Scheduling file:\n%s\nto be renamed to:\n%s\nThis is the first '
+                                  'time this name has been scheduled.', file.raw_name,
+                                  iterless_name)
                     self.__produced_names[produced] = {'first_occurrence' : file.original_path,
-                                                     'occurrences' : 1}
+                                                       'occurrences' : 1}
                     continue
 
                 # If here, then duplicated name found.  Need to rename original if first time
-                logging.debug('Duplicate file name: ' + iterless_name + '  Invoking ITER operator.')
+                logging.debug('Duplicate file name: %s  Invoking ITER operator.', iterless_name)
                 if self.__produced_names[produced]['occurrences'] == 1:
                     logging.debug('First duplicate; scheduling rename of first occurrence.')
                     for orig_file in return_list:
@@ -458,7 +458,7 @@ class AutotagicalNamer:
                 continue
 
             # If we got here, then file was manually named
-            logging.info('Skipped renaming of manually-named file: ' + file.original_path)
+            logging.info('Skipped renaming of manually-named file:\n%s', file.original_path)
             file.rename_failed = False
             return_list.append(file)
 

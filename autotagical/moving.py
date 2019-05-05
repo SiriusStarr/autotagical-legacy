@@ -165,18 +165,17 @@ def generate_path(tag_array, movement_schema, categories):
         output = process_filter_level(tag_array, filter_level, categories)
         # If a positive match was found, done (because filter priority)
         if output[0]:
-            logging.debug('Good match for moving tags: ' + str(tag_array))
+            logging.debug('Good match for moving tags: %s', str(tag_array))
             return (False, output[1])
-        else:
-            # A partial sorting was found, will be used if no exact match is found
-            if output[1] and not partial_sort:
-                partial_sort = output[1]
+        # A partial sorting was found; will be used if no exact match is found
+        if output[1] and not partial_sort:
+            partial_sort = output[1]
 
     # If we're here, we either found zero matches or a partial sort
     if partial_sort:
-        logging.warning('Failed to match a fully specified location for tags:\n' + str(tag_array) +
-                        '\nSorted only to:\n' + partial_sort + '\nThis is bad practice.  Add a /*| '
-                        'operator at that level if you would like to catch all at that point.')
+        logging.warning('Failed to match a fully specified location for tags:\n%s\nSorted only '
+                        'to:\n%s\nThis is bad practice.  Add a /*| operator at that level if you '
+                        'intend to catch all files at that point.', str(tag_array), partial_sort)
         return (False, partial_sort)
 
     # Absolutely no matching whatsoever, so return that it failed
@@ -217,7 +216,7 @@ def determine_destination(file_list, movement_schema, categories):
 
         # Warn if no math was found
         if name_file.move_failed:
-            logging.warning('File did not match any moving schema:\n' + str(name_file))
+            logging.warning('File did not match any moving schema:\n%s', str(name_file))
 
         # Append it to the list
         return_list.append(name_file)

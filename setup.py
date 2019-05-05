@@ -1,11 +1,15 @@
 import os
+import sys
 import setuptools
+from setuptools.command.test import test
 from autotagical import __version__ as version
 from tests.tests import run_tests
-from setuptools.command.test import test
 
 class Doctest(test):
     def run(self):
+        # Modify path so loading schemas works okay while testing
+        old_path = sys.path[0]
+        sys.path[0] = os.path.join(old_path, 'autotagical')
         results = run_tests('categories')
         if results.failed:
             raise Exception(results)
@@ -30,6 +34,7 @@ class Doctest(test):
         if results.failed:
             raise Exception(results)
         print('Okay!')
+        sys.path[0] = old_path
         super().run()
         print('All tests passed!')
 

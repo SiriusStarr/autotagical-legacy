@@ -17,6 +17,7 @@ Imports
 -------
 
 >>> import os
+>>> import sys
 >>> from autotagical.schema import AutotagicalSchema
 
 AutotagicalSchema.__init__()
@@ -907,7 +908,7 @@ Normal Usage
 ------------
 
 >>> test_schema = AutotagicalSchema()
->>> test_schema.load_schema_from_file(os.path.join('tests', 'files', 'test_schema.json'))
+>>> test_schema.load_schema_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_schema.json'))
 True
 >>> print(test_schema)
 -----Schema-----
@@ -963,5 +964,5 @@ Bad Cases
 ---------
 
 >>> test_schema = AutotagicalSchema()
->>> test_schema.load_schema_from_file(os.path.join('tests', 'files', 'bad_test_schema.json'))
+>>> test_schema.load_schema_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'bad_test_schema.json'))
 False

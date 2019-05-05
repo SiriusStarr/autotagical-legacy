@@ -89,19 +89,17 @@ class AutotagicalCategories:
 
         # Load autotagical category validation schema or fail with message
         try:
-            cat_schema_file = open(os.path.join('json_schema', 'category_file_schema.json'),
-                                   'r')
-            self.category_schema = json.load(cat_schema_file)
-            cat_schema_file.close()
+            with open(os.path.join(os.path.dirname(__file__), 'json_schema',
+                                   'category_file_schema.json'), 'r') as cat_schema_file:
+                self.category_schema = json.load(cat_schema_file)
         except IOError:
-            logging.error('Category file schema missing or cannot be opened!  ' +
+            logging.error('Category file schema missing or cannot be opened!  '
                           'Installation of autotagical is corrupt!')
             sys.exit()
         except json.decoder.JSONDecodeError as err:
-            logging.error('Category file schema is wholly corrupt!  ' +
-                          'Installation of autotagical is corrupt!  JSON error:\nAt line ' +
-                          str(err.lineno) + ', column ' + str(err.colno) +
-                          ' the following error was encountered:\n' + str(err.msg))
+            logging.error('Category file schema is wholly corrupt!  Installation of autotagical is '
+                          'corrupt!  JSON error:\nAt line %s, column %s the following error was '
+                          'encountered:\n%s', str(err.colno), str(err.lineno), str(err.msg))
             sys.exit()
         except: # pylint: disable=bare-except
             logging.error('An unhandled execption occured loading category file schema.')
@@ -109,20 +107,18 @@ class AutotagicalCategories:
 
         # Load TagSpaces category validation schema or fail with message
         try:
-            tagspaces_schema_file = open(os.path.join('json_schema',
-                                                      'tagspaces_category_schema.json'),
-                                         'r')
-            self.tagspaces_schema = json.load(tagspaces_schema_file)
-            tagspaces_schema_file.close()
+            with open(os.path.join(os.path.dirname(__file__), 'json_schema',
+                                   'tagspaces_category_schema.json'), 'r') as tagspaces_schema_file:
+                self.tagspaces_schema = json.load(tagspaces_schema_file)
         except IOError:
-            logging.error('TagSpaces category file schema missing or cannot be opened!  ' +
+            logging.error('TagSpaces category file schema missing or cannot be opened!  '
                           'Installation of autotagical is corrupt!')
             sys.exit()
         except json.decoder.JSONDecodeError as err:
-            logging.error('TagSpaces category file schema is wholly corrupt!  ' +
-                          'Installation of autotagical is corrupt!  JSON error:\nAt line ' +
-                          str(err.lineno) + ', column ' + str(err.colno) +
-                          ' the following error was encountered:\n' + str(err.msg))
+            logging.error('TagSpaces category file schema is wholly corrupt!  Installation of '
+                          'autotagical is corrupt!  JSON error:\nAt line %s, column %s the '
+                          'following error was encountered:\n%s', str(err.lineno), str(err.colno),
+                          str(err.msg))
             sys.exit()
         except: # pylint: disable=bare-except
             logging.error('An unhandled execption occured loading TagSpaces category file schema.')
@@ -158,9 +154,8 @@ class AutotagicalCategories:
 
         # Check if the category exists, print error if it doesn't and return empty.
         if category not in self.__cat_data:
-            logging.warning('Malformed condition encountered: Category "' +
-                            str(category) +
-                            '" is not among loaded categories')
+            logging.warning('Malformed condition encountered: Category "%s" is not among loaded '
+                            'categories', str(category))
             return set()
         # Otherwise return the category data.
         return self.__cat_data[category]
@@ -212,16 +207,16 @@ class AutotagicalCategories:
         for category in json_input['categories']:
             # It's bad practice to have the same category multiple times, so warn but don't fail
             if category['name'] in self.__cat_data:
-                logging.warning('Category "' + category['name'] + '" multiply defined!  ' +
-                                'Already have: "' + str(self.__cat_data[category['name']]) +
-                                '", appending to this: "' + str(category['tags']))
+                logging.warning('Category "%s" multiply defined!  Already have: "%s", appending to '
+                                'this: "%s"', category['name'],
+                                str(self.__cat_data[category['name']]), str(category['tags']))
                 # Append if already seen
                 self.__cat_data[category['name']].update(category['tags'])
             else:
                 # Otherwise add category
                 self.__cat_data[category['name']] = set(category['tags'])
 
-        logging.debug('Loaded categories from autotagical format:\n' + str(self.__cat_data))
+        logging.debug('Loaded categories from autotagical format:\n%s', str(self.__cat_data))
         # Loading was successful, so return True
         return True
 
@@ -257,9 +252,9 @@ class AutotagicalCategories:
             for category in json_input['tagGroups']:
                 # It's bad practice to have the same category multiple times, so warn but don't fail
                 if category['title'] in self.__cat_data:
-                    logging.warning('Category "' + category['title'] + '" multiply defined!  ' +
-                                    'Already have: "' + str(self.__cat_data[category['title']]) +
-                                    '", appending to this: "' +
+                    logging.warning('Category "%s" multiply defined!  Already have: "%s", '
+                                    'appending to this: "%s"', category['title'],
+                                    str(self.__cat_data[category['title']]),
                                     str([tag['title'] for tag in category['children']]))
                     # Append if already seen
                     self.__cat_data[category['title']].update( \
@@ -270,11 +265,11 @@ class AutotagicalCategories:
                         {tag['title'] for tag in category['children']}
         except KeyError:
             # This may happen if format changes
-            logging.error('Error encountered processing TagSpaces file!  Please report this and ' +
+            logging.error('Error encountered processing TagSpaces file!  Please report this and '
                           'include the file.')
             return False
 
-        logging.debug('Loaded categories from TagSpaces format:\n\n' + str(self.__cat_data))
+        logging.debug('Loaded categories from TagSpaces format:\n%s', str(self.__cat_data))
         # Loading was successful, so return True
         return True
 
@@ -317,12 +312,11 @@ class AutotagicalCategories:
                 validate(instance=json_input, schema=self.tagspaces_schema)
             except ValidationError as err_tagspaces:
                 # It failed both schemas, so we don't recognize it.
-                logging.error('Category data does not match any known format.\n' +
-                              'Autotagical Format Error: ' + str(err_autotagical.message) +
-                              ' at path: ' +
-                              '->'.join([str(element) for element in err_autotagical.path]) +
-                              '\nTagSpaces Format Error: ' + str(err_tagspaces.message) +
-                              ' at path: ' +
+                logging.error('Category data does not match any known format.\nAutotagical Format '
+                              'Error: %s at path: %s\nTagSpaces Format Error: %s at path: %s',
+                              str(err_autotagical.message),
+                              '->'.join([str(element) for element in err_autotagical.path]),
+                              str(err_tagspaces.message),
                               '->'.join([str(element) for element in err_tagspaces.path]))
                 return False
 
@@ -356,16 +350,16 @@ class AutotagicalCategories:
         try:
             json_data = json.loads(json_string)
         except json.decoder.JSONDecodeError as err:
-            logging.error('Category data is wholly corrupt!  JSON error:\nAt line ' +
-                          str(err.lineno) + ', column ' + str(err.colno) +
-                          ' the following error was encountered:\n' + str(err.msg))
+            logging.error('Category data is wholly corrupt!  JSON error:\nAt line %s, column %s '
+                          'the following error was encountered:\n%s', str(err.lineno),
+                          str(err.colno), str(err.msg))
             return False
         except: # pylint: disable=bare-except
             logging.error('An unhandled execption occured while loading category data.')
             return False
 
         # If it's valid JSON, pass it to self.load_categories
-        logging.debug('Loading category data from string: ' + json_string)
+        logging.debug('Loading category data from string: %s', json_string)
         return self.load_categories(json_data, append)
 
     def load_categories_from_file(self, file_path, append=False):
@@ -388,25 +382,25 @@ class AutotagicalCategories:
         '''
         # If loading something without JSON extension, may be fine, but bad practice, so warn.
         if file_path[-5:] != '.json':
-            logging.warning('Loading a category file with the wrong file extension: ' + file_path +
-                            '  While not strictly necessary, the extension should be ".json".')
+            logging.warning('Loading a category file with the wrong file extension: %s  While not '
+                            'strictly necessary, the extension should be ".json".', file_path)
         # Try to open the file and parse it as JSON or fail with message
         try:
             category_file = open(file_path, 'r')
             json_data = json.load(category_file)
             category_file.close()
         except IOError:
-            logging.error('Could not open category file at: ' + file_path)
+            logging.error('Could not open category file at: %s', file_path)
             sys.exit()
         except json.decoder.JSONDecodeError as err:
-            logging.error('Category file is wholly corrupt!  JSON error:\nAt line ' +
-                          str(err.lineno) + ', column ' + str(err.colno) +
-                          ' the following error was encountered:\n' + str(err.msg))
+            logging.error('Category file is wholly corrupt!  JSON error:\nAt line %s, column %s '
+                          'the following error was encountered:\n%s', str(err.lineno),
+                          str(err.colno), str(err.msg))
             sys.exit()
         except: # pylint: disable=bare-except
             logging.error('An unhandled execption occured while loading a category file.')
             sys.exit()
 
         # If it's valid JSON, pass it to self.load_categories
-        logging.debug('Loading category data from: ' + file_path)
+        logging.debug('Loading category data from: %s', file_path)
         return self.load_categories(json_data, append)

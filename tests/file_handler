@@ -17,6 +17,7 @@ Test Categories
 ---------------
 Set up a basic categories object.
 
+>>> import sys
 >>> from autotagical.categories import AutotagicalCategories
 >>> test_categories = AutotagicalCategories()
 >>> test_categories.load_categories(
@@ -174,7 +175,7 @@ Test Files
 >>> test_file_1 = AutotagicalFile(
 ...   name='Test1999',
 ...   raw_name='Test1999[dipa ale refrigerated simcoe ctz centennial].txt',
-...   original_path=os.path.join('tests', 'files', 'test_input_folder', 'Test1999[dipa ale refrigerated simcoe ctz centennial].txt'),
+...   original_path=os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'Test1999[dipa ale refrigerated simcoe ctz centennial].txt'),
 ...   extension='.txt',
 ...   tags='[dipa ale refrigerated simcoe ctz centennial]',
 ...   tag_array=['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
@@ -186,7 +187,7 @@ Test Files
 >>> test_file_2 = AutotagicalFile(
 ...   name='Test1532',
 ...   raw_name='Test1532[pale_ale ale refrigerated cascade].txt',
-...   original_path=os.path.join('tests', 'files', 'test_input_folder', '.hidden_subfolder', 'Test1532[pale_ale ale refrigerated cascade].txt'),
+...   original_path=os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', '.hidden_subfolder', 'Test1532[pale_ale ale refrigerated cascade].txt'),
 ...   extension='.txt',
 ...   tags='[pale_ale ale refrigerated cascade]',
 ...   tag_array=['pale_ale', 'ale', 'refrigerated', 'cascade']
@@ -198,7 +199,7 @@ Test Files
 >>> test_file_3 = AutotagicalFile(
 ...   name='Affligem Tripel',
 ...   raw_name='Affligem Tripel[tripel ale refrigerated].txt',
-...   original_path=os.path.join('tests', 'files', 'test_input_folder', 'Affligem Tripel[tripel ale refrigerated].txt'),
+...   original_path=os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'Affligem Tripel[tripel ale refrigerated].txt'),
 ...   extension='.txt',
 ...   tags='[tripel ale refrigerated]',
 ...   tag_array=['tripel', 'ale', 'refrigerated']
@@ -210,7 +211,7 @@ Test Files
 >>> test_file_4 = AutotagicalFile(
 ...   name='also this',
 ...   raw_name='also this[scotch laphroaig islay].txt',
-...   original_path=os.path.join('tests', 'files', 'test_input_folder', 'subfolder', 'also this[scotch laphroaig islay].txt'),
+...   original_path=os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'subfolder', 'also this[scotch laphroaig islay].txt'),
 ...   extension='.txt',
 ...   tags='[scotch laphroaig islay]',
 ...   tag_array = ['scotch', 'laphroaig', 'islay']
@@ -221,7 +222,7 @@ Test Files
 >>> test_file_5 = AutotagicalFile(
 ...   name='Pappys Family Reserve',
 ...   raw_name='Pappys Family Reserve[bourbon 23_year pappys].txt',
-...   original_path=os.path.join('tests', 'files', 'test_input_folder', 'Pappys Family Reserve[bourbon 23_year pappys].txt'),
+...   original_path=os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'Pappys Family Reserve[bourbon 23_year pappys].txt'),
 ...   extension='.txt',
 ...   tags='[bourbon 23_year pappys]',
 ...   tag_array=['bourbon', '23_year', 'pappys']
@@ -232,7 +233,7 @@ Test Files
 >>> test_file_6 = AutotagicalFile(
 ...   name='Water',
 ...   raw_name='Water[non-alcoholic refrigerated].txt',
-...   original_path=os.path.join('tests', 'files', 'test_input_folder', 'Water[non-alcoholic refrigerated].txt'),
+...   original_path=os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'Water[non-alcoholic refrigerated].txt'),
 ...   extension='.txt',
 ...   tags='[non-alcoholic refrigerated]',
 ...   tag_array=['non-alcoholic', 'refrigerated']
@@ -379,7 +380,7 @@ Bad Lines
 This shoud not cause the whole file to fail (will just throw a warning)
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_ignore_file(os.path.join('tests', 'files', 'bad_test_ignore_file'))
+>>> test_handler.load_ignore_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'bad_test_ignore_file'))
 True
 >>> test_handler._AutotagicalFileHandler__ignore_patterns
 [re.compile('ignore.*\\.txt'), re.compile('ignorethis')]
@@ -388,7 +389,7 @@ Normal Use
 ----------
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_ignore_file(os.path.join('tests', 'files', 'test_ignore_file'))
+>>> test_handler.load_ignore_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_ignore_file'))
 True
 >>> test_handler._AutotagicalFileHandler__ignore_patterns
 [re.compile('ignore.*\\.txt'), re.compile('ignorethis')]
@@ -402,7 +403,7 @@ Empty Folder
 ------------
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder', 'empty folder'))
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'empty folder'))
 True
 >>> test_handler.get_file_list()
 []
@@ -418,7 +419,7 @@ Normal Use
 ----------
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder'))
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 True
 >>> sorted(test_handler.get_file_list(), key=lambda file: file.original_path) #doctest: +ELLIPSIS
 [-----File-----
@@ -426,7 +427,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -437,7 +438,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "...tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -448,7 +449,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "...tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -459,7 +460,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
@@ -471,7 +472,7 @@ Recursive
 ---------
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder'), True)
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'), True)
 True
 >>> sorted(test_handler.get_file_list(), key=lambda file: file.original_path) #doctest: +ELLIPSIS
 [-----File-----
@@ -479,7 +480,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -490,7 +491,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "...tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -501,7 +502,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "...tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -512,7 +513,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
@@ -523,7 +524,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests...files...test_input_folder...subfolder...also this[scotch laphroaig islay].txt"
+  Original Path: "...tests...files...test_input_folder...subfolder...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: False
@@ -535,7 +536,7 @@ Process Hidden
 --------------
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder'), False, True)
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'), False, True)
 True
 >>> sorted(test_handler.get_file_list(), key=lambda file: file.original_path) #doctest: +ELLIPSIS
 [-----File-----
@@ -543,7 +544,7 @@ True
   Extension: ""
   Move Failed: False
   Name: ".hidden file "
-  Original Path: "tests...files...test_input_folder....hidden file [tag1 tag2]"
+  Original Path: "...tests...files...test_input_folder....hidden file [tag1 tag2]"
   Output Name: ".hidden file [tag1 tag2]"
   Raw Name: ".hidden file [tag1 tag2]"
   Rename Failed: False
@@ -554,7 +555,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -565,7 +566,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "...tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -576,7 +577,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "...tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -587,7 +588,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
@@ -599,7 +600,7 @@ Process Hidden & Recurse
 ------------------------
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder'), True, True)
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'), True, True)
 True
 >>> sorted(test_handler.get_file_list(), key=lambda file: file.original_path) #doctest: +ELLIPSIS
 [-----File-----
@@ -607,7 +608,7 @@ True
   Extension: ""
   Move Failed: False
   Name: ".hidden file "
-  Original Path: "tests...files...test_input_folder....hidden file [tag1 tag2]"
+  Original Path: "...tests...files...test_input_folder....hidden file [tag1 tag2]"
   Output Name: ".hidden file [tag1 tag2]"
   Raw Name: ".hidden file [tag1 tag2]"
   Rename Failed: False
@@ -618,7 +619,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Test1532"
-  Original Path: "tests...files...test_input_folder....hidden_subfolder...Test1532[pale_ale ale refrigerated cascade].txt"
+  Original Path: "...tests...files...test_input_folder....hidden_subfolder...Test1532[pale_ale ale refrigerated cascade].txt"
   Output Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Raw Name: "Test1532[pale_ale ale refrigerated cascade].txt"
   Rename Failed: False
@@ -629,7 +630,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -640,7 +641,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "...tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -651,7 +652,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "...tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -662,7 +663,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
@@ -673,7 +674,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests...files...test_input_folder...subfolder...also this[scotch laphroaig islay].txt"
+  Original Path: "...tests...files...test_input_folder...subfolder...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: False
@@ -687,11 +688,11 @@ Do Not Double Load
 * Do not double load identical files.
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder'), True)
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'), True)
 True
 >>> len(test_handler.get_file_list())
 5
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder', 'subfolder'))
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'subfolder'))
 True
 >>> len(test_handler.get_file_list())
 5
@@ -701,7 +702,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -712,7 +713,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "...tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -723,7 +724,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "...tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -734,7 +735,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
@@ -745,7 +746,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests...files...test_input_folder...subfolder...also this[scotch laphroaig islay].txt"
+  Original Path: "...tests...files...test_input_folder...subfolder...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: False
@@ -756,15 +757,15 @@ True
 * Do load identical file names
 
 >>> test_handler = AutotagicalFileHandler(test_schema.tag_formats)
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder'), True)
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'), True)
 True
 >>> len(test_handler.get_file_list())
 5
->>> f = open(os.path.join('tests', 'files', 'test_input_folder', 'subfolder', test_file_3.raw_name), 'w')
+>>> f = open(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'subfolder', test_file_3.raw_name), 'w')
 >>> f.write("This should load.")
 17
 >>> f.close()
->>> test_handler.load_folder(os.path.join('tests', 'files', 'test_input_folder', 'subfolder'))
+>>> test_handler.load_folder(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'subfolder'))
 True
 >>> len(test_handler.get_file_list())
 6
@@ -774,7 +775,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -785,7 +786,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Pappys Family Reserve"
-  Original Path: "tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
+  Original Path: "...tests...files...test_input_folder...Pappys Family Reserve[bourbon 23_year pappys].txt"
   Output Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Raw Name: "Pappys Family Reserve[bourbon 23_year pappys].txt"
   Rename Failed: False
@@ -796,7 +797,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Test1999"
-  Original Path: "tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
+  Original Path: "...tests...files...test_input_folder...Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Output Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Raw Name: "Test1999[dipa ale refrigerated simcoe ctz centennial].txt"
   Rename Failed: False
@@ -807,7 +808,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Water"
-  Original Path: "tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...Water[non-alcoholic refrigerated].txt"
   Output Name: "Water[non-alcoholic refrigerated].txt"
   Raw Name: "Water[non-alcoholic refrigerated].txt"
   Rename Failed: False
@@ -818,7 +819,7 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "Affligem Tripel"
-  Original Path: "tests...files...test_input_folder...subfolder...Affligem Tripel[tripel ale refrigerated].txt"
+  Original Path: "...tests...files...test_input_folder...subfolder...Affligem Tripel[tripel ale refrigerated].txt"
   Output Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Raw Name: "Affligem Tripel[tripel ale refrigerated].txt"
   Rename Failed: False
@@ -829,14 +830,14 @@ True
   Extension: ".txt"
   Move Failed: False
   Name: "also this"
-  Original Path: "tests...files...test_input_folder...subfolder...also this[scotch laphroaig islay].txt"
+  Original Path: "...tests...files...test_input_folder...subfolder...also this[scotch laphroaig islay].txt"
   Output Name: "also this[scotch laphroaig islay].txt"
   Raw Name: "also this[scotch laphroaig islay].txt"
   Rename Failed: False
   Tags: "[scotch laphroaig islay]"
   Tag Array: ['scotch', 'laphroaig', 'islay']
 -----End File-----]
->>> os.remove(os.path.join('tests', 'files', 'test_input_folder', 'subfolder', test_file_3.raw_name))
+>>> os.remove(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'subfolder', test_file_3.raw_name))
 
 move_files(move_list, settings)
 ===============================
@@ -846,12 +847,12 @@ Setup
 
 >>> from argparse import Namespace
 >>> import shutil
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'test_input_folder'), os.path.join('tests', 'files', 'file_backup'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'))
 
 Edge Case
 ---------
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], clobber=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], clobber=False)
 >>> move_files([], test_settings)
 
 Normal Use
@@ -859,7 +860,7 @@ Normal Use
 
 Only files with move_failed = False and rename_failed = False should be moved.
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=False, force_move=False, silence_windows=False, trial_run=False, clobber=False, copy=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=False, force_move=False, silence_windows=False, trial_run=False, clobber=False, copy=False)
 >>> move_files(files, test_settings)
 >>> os.path.exists(test_file_1.original_path)
 False
@@ -886,15 +887,15 @@ False
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_6.dest_folder, test_file_6.output_name))
 True
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 All Match Root
 --------------
 
 Only files with rename_failed = False should be moved.
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=False, trial_run=False, silence_windows=False, clobber=False, copy=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=False, trial_run=False, silence_windows=False, clobber=False, copy=False)
 >>> move_files(files, test_settings)
 >>> os.path.exists(test_file_1.original_path)
 False
@@ -921,15 +922,15 @@ False
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_6.dest_folder, test_file_6.output_name))
 True
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 Force Move
 ----------
 
 Only files with move_failed = False should be moved.
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=False, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=False, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False)
 >>> move_files(files, test_settings)
 >>> os.path.exists(test_file_1.original_path)
 False
@@ -956,15 +957,15 @@ False
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_6.dest_folder, test_file_6.output_name))
 True
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 Force Move And All Match Root
 -----------------------------
 
 All files should be moved.
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False)
 >>> move_files(files, test_settings)
 >>> os.path.exists(test_file_1.original_path)
 False
@@ -991,15 +992,15 @@ False
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_6.dest_folder, test_file_6.output_name))
 True
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 Trial Run
 ---------
 
 Only files with move_failed = False should be moved.
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=False, force_move=True, trial_run=True, silence_windows=False, clobber=False, copy=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=False, force_move=True, trial_run=True, silence_windows=False, clobber=False, copy=False)
 >>> move_files(files, test_settings)
 >>> os.path.exists(test_settings.output_folders[0])
 False
@@ -1019,7 +1020,7 @@ True
 Copy
 ----
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=True)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=True)
 >>> move_files(files, test_settings)
 >>> os.path.exists(test_file_1.original_path)
 True
@@ -1046,13 +1047,13 @@ True
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_6.dest_folder, test_file_6.output_name))
 True
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 Multiple Outputs
 ----------------
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1'), os.path.join('tests', 'files', 'out2')], all_match_root=True, silence_windows=False, force_move=True, trial_run=False, clobber=False, copy=True)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out2')], all_match_root=True, silence_windows=False, force_move=True, trial_run=False, clobber=False, copy=True)
 >>> move_files(files, test_settings)
 >>> os.path.exists(test_file_1.original_path)
 True
@@ -1092,8 +1093,8 @@ True
 True
 >>> shutil.rmtree(test_settings.output_folders[0])
 >>> shutil.rmtree(test_settings.output_folders[1])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 Complex Cases
 -------------
@@ -1102,7 +1103,7 @@ Complex Cases
 
 >>> def ans_no(a, b):
 ...   return False
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_no)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_no)
 >>> os.makedirs(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder))
 >>> f = open(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name), 'w')
 >>> f.write("This should not clobber")
@@ -1142,14 +1143,14 @@ True
 This should not clobber
 >>> f.close()
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 * Clobber By User Input
 
 >>> def ans_yes(a, b):
 ...   return True
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
 >>> os.makedirs(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder))
 >>> f = open(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name), 'w')
 >>> f.write("This should not clobber")
@@ -1190,12 +1191,12 @@ Test1999[dipa ale refrigerated simcoe ctz centennial].txt
 <BLANKLINE>
 >>> f.close()
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 * Clobber By Setting
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=True, copy=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=True, copy=False)
 >>> os.makedirs(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder))
 >>> f = open(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name), 'w')
 >>> f.write("This should not clobber")
@@ -1236,12 +1237,12 @@ Test1999[dipa ale refrigerated simcoe ctz centennial].txt
 <BLANKLINE>
 >>> f.close()
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 * No Clobber Directories
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_no)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_no)
 >>> os.makedirs(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name))
 >>> f = open(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name, 'maybeclobbered'), 'w')
 >>> f.write("This should not clobber")
@@ -1281,12 +1282,12 @@ True
 This should not clobber
 >>> f.close()
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 * Clobber Directories By Setting
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=True, copy=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=True, copy=False)
 >>> os.makedirs(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name))
 >>> f = open(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name, 'maybeclobbered'), 'w')
 >>> f.write("This should not clobber")
@@ -1324,12 +1325,12 @@ True
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name, 'maybeclobbered'))
 False
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 * Clobber Directories By User Input
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
 >>> os.makedirs(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name))
 >>> f = open(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name, 'maybeclobbered'), 'w')
 >>> f.write("This should not clobber")
@@ -1367,14 +1368,14 @@ True
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name, 'maybeclobbered'))
 False
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 * No Clobber File Trial Run
 
 >>> def ans_yes(a, b):
 ...   return True
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=True, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=True, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
 >>> os.makedirs(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder))
 >>> f = open(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name), 'w')
 >>> f.write("This should not clobber")
@@ -1414,12 +1415,12 @@ False
 This should not clobber
 >>> f.close()
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 * No Clobber Directories Trial Run
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=True, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=True, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
 >>> os.makedirs(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name))
 >>> f = open(os.path.join(test_settings.output_folders[0], test_file_1.dest_folder, test_file_1.output_name, 'maybeclobbered'), 'w')
 >>> f.write("This should not clobber")
@@ -1461,8 +1462,8 @@ True
 This should not clobber
 >>> f.close()
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 No Clobber Self
 ---------------
@@ -1470,7 +1471,7 @@ No Clobber Self
 >>> test_file_7 = AutotagicalFile(
 ...   name='Test1999',
 ...   raw_name='Test1999[dipa ale refrigerated simcoe ctz centennial].txt',
-...   original_path=os.path.join('tests', 'files', 'test_input_folder', 'Test1999[dipa ale refrigerated simcoe ctz centennial].txt'),
+...   original_path=os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder', 'Test1999[dipa ale refrigerated simcoe ctz centennial].txt'),
 ...   extension='.txt',
 ...   tags='[dipa ale refrigerated simcoe ctz centennial]',
 ...   tag_array=['dipa', 'ale', 'refrigerated', 'simcoe', 'ctz', 'centennial']
@@ -1478,15 +1479,15 @@ No Clobber Self
 >>> test_file_7.dest_folder = ''
 >>> test_file_7.move_failed = False
 >>> test_file_7.rename_failed = False
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'test_input_folder')], all_match_root=False, force_move=False, silence_windows=False, trial_run=True, clobber=True, copy=False)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder')], all_match_root=False, force_move=False, silence_windows=False, trial_run=True, clobber=True, copy=False)
 >>> move_files([test_file_7], test_settings)
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 No Clobber Output Folder
 ------------------------
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_no)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_no)
 >>> f = open(test_settings.output_folders[0], 'w')
 >>> f.write("This should not clobber")
 23
@@ -1516,13 +1517,13 @@ True
 This should not clobber
 >>> f.close()
 >>> os.remove(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 Clobber Output Folder From Setting
 ----------------------------------
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=True, copy=False, get_yes_no=ans_no)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=True, copy=False, get_yes_no=ans_no)
 >>> f = open(test_settings.output_folders[0], 'w')
 >>> f.write("This should not clobber")
 23
@@ -1557,13 +1558,13 @@ False
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_6.dest_folder, test_file_6.output_name))
 True
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 Clobber Output Folder From User Input
 -------------------------------------
 
->>> test_settings = Namespace(output_folders=[os.path.join('tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
+>>> test_settings = Namespace(output_folders=[os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'out1')], all_match_root=True, force_move=True, trial_run=False, silence_windows=False, clobber=False, copy=False, get_yes_no=ans_yes)
 >>> f = open(test_settings.output_folders[0], 'w')
 >>> f.write("This should not clobber")
 23
@@ -1598,10 +1599,10 @@ False
 >>> os.path.exists(os.path.join(test_settings.output_folders[0], test_file_6.dest_folder, test_file_6.output_name))
 True
 >>> shutil.rmtree(test_settings.output_folders[0])
->>> shutil.rmtree(os.path.join('tests', 'files', 'test_input_folder'))
->>> suppress_out = shutil.copytree(os.path.join('tests', 'files', 'file_backup'), os.path.join('tests', 'files', 'test_input_folder'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
+>>> suppress_out = shutil.copytree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'), os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_input_folder'))
 
 Tear Down
 ---------
 
->>> shutil.rmtree(os.path.join('tests', 'files', 'file_backup'))
+>>> shutil.rmtree(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'file_backup'))

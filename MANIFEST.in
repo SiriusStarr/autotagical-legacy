@@ -1,2 +1,2 @@
-include json_schema/*
+include autotagical/json_schema/*
 include LICENSE.md

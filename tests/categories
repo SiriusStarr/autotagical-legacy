@@ -17,6 +17,7 @@ Imports
 -------
 
 >>> import os
+>>> import sys
 >>> from autotagical.categories import AutotagicalCategories
 
 AutotagicalCategories.__init__()
@@ -1524,7 +1525,7 @@ Normal Usage
 * autotagical format
 
 >>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_file(os.path.join('tests', 'files', 'test_categories.json'))
+>>> test_categories.load_categories_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_categories.json'))
 True
 >>> print(test_categories)
 -----Categories----
@@ -1537,7 +1538,7 @@ True
 * TagSpaces format
 
 >>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_file(os.path.join('tests', 'files', 'test_tagspaces_tag_library.json'))
+>>> test_categories.load_categories_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_tagspaces_tag_library.json'))
 True
 >>> print(test_categories)
 -----Categories----
@@ -1553,11 +1554,11 @@ Bad Cases
 * autotagical format
 
 >>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_file(os.path.join('tests', 'files', 'bad_test_categories.json'))
+>>> test_categories.load_categories_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'bad_test_categories.json'))
 False
 
 * TagSpaces format
 
 >>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_file(os.path.join('tests', 'files', 'bad_test_categories.json'))
+>>> test_categories.load_categories_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'bad_test_categories.json'))
 False

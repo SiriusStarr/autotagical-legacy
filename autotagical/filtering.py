@@ -83,7 +83,7 @@ def split_filter_to_conditions(input_filter):
     # Confirm that a string is being passed
     if not isinstance(input_filter, str):
         # Log and raise error, as something has gone seriously wrong
-        logging.error('A seriously malformed filter was encountered: ' + str(input_filter))
+        logging.error('A seriously malformed filter was encountered: %s', str(input_filter))
         raise FilterError('Wrong type encountered in filter: ' + str(input_filter) +
                           ' is of type ' + str(type(input_filter)))
 
@@ -93,7 +93,7 @@ def split_filter_to_conditions(input_filter):
     # If any condition is blank, a malformed filter was encountered
     if '' in to_return:
         # Warn about malformed filter
-        logging.warning('A malformed filter was encountered: "' + input_filter + '"')
+        logging.warning('A malformed filter was encountered: "%s"', input_filter)
         # Strip it out and continue, since this is a non-fatal error
         to_return = [condition for condition in to_return if condition != '']
 
@@ -155,8 +155,7 @@ def check_condition(tag_array, condition, categories):
             return not match_found
 
     # If here, something went horribly wrong, throw an error
-    logging.error('A seriously malformed part of a filter was encountered: "' +
-                  str(condition) + '"')
+    logging.error('A seriously malformed part of a filter was encountered: "%s"', str(condition))
     raise FilterError('Malformed condition encountered: "' + str(condition) + '"')
 
 def check_against_filter(tag_array, single_filter, categories):
@@ -234,11 +233,10 @@ def check_against_filters(tag_array, filter_array, categories=()):
     for single_filter in filter_array:
         # If a filter is true, no need to check any further.
         if check_against_filter(tag_array, single_filter, categories):
-            logging.debug('Tag Array: ' + str(tag_array) + ' matched single filter: ' +
-                          str(single_filter) + ' from ' + str(filter_array))
+            logging.debug('Tag Array: %s matched single filter: %s from %s', str(tag_array),
+                          str(single_filter), str(filter_array))
             return True
 
     # If no one filters were matched, return False
-    logging.debug('Tag Array: ' + str(tag_array) + ' did not match and filter in ' +
-                  str(filter_array))
+    logging.debug('Tag Array: %s did not match any filter in %s', str(tag_array), str(filter_array))
     return False

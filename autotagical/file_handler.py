@@ -48,19 +48,19 @@ def check_windows_compat(name, full_path):
     None
     '''
     if any(char in full_path for char in ['<', '>', ':', '"', '|', '?', '*']):
-        logging.warning('Unsafe file name/path: ' + full_path + '\nWindows cannot tolerate '
-                        'the following characters:  <>:"|?*  If files are to be used with '
-                        'Windows, these names must change.  Otherwise, use -P to silence '
-                        'Windows-specific warnings.')
+        logging.warning('Unsafe file name/path: %s\nWindows cannot tolerate the following '
+                        'characters:  <>:"|?*  If files are to be used with Windows, these names '
+                        'must change.  Otherwise, use -P to silence Windows-specific warnings.',
+                        full_path)
     if '\\' in name:
-        logging.warning('Unsafe file name: ' + name + '\nWindows cannot tolerate ' + '\\' + 'in '
-                        ' file names.  If files are to be used with Windows, these names must '
-                        ' change.  Otherwise, use -P to silence Windows-specific warnings.')
+        logging.warning('Unsafe file name: %s\nWindows cannot tolerate \\ in file names.  If files '
+                        'are to be used with Windows, these names must change.  Otherwise, use -P '
+                        'to silence Windows-specific warnings.', name)
     if name[-1] == '.' or name[-1] == ' ':
-        logging.warning('Unsafe file name: ' + name + '\nWindows cannot tolerate file names '
-                        'that end in a space or a period.  If files are to be used with Windows,'
-                        ' these names must  change.  Otherwise, use -P to silence Windows-specific '
-                        'warnings.')
+        logging.warning('Unsafe file name: %s\nWindows cannot tolerate file names that end in a '
+                        'space or a period.  If files are to be used with Windows, these names '
+                        'must change.  Otherwise, use -P to silence Windows-specific warnings.',
+                        name)
 
 def move_files(move_list, settings): # pylint: disable=too-many-branches, too-many-statements
     '''
@@ -88,20 +88,20 @@ def move_files(move_list, settings): # pylint: disable=too-many-branches, too-ma
                 logging.error('Aborting due to bad output folder location.')
                 sys.exit()
             else:
-                logging.warning('Overwriting file at: ' + out_folder)
+                logging.warning('Overwriting file at: %s', out_folder)
                 os.remove(out_folder)
 
     # Iterate through files
     for file in move_list: # pylint: disable=too-many-nested-blocks
         # Unless told to move everything, warn about files that don't match
         if not settings.all_match_root and file.move_failed:
-            logging.warning('Skipping file as it failed to match any movement schema: ' +
+            logging.warning('Skipping file, as it failed to match any movement schema: %s',
                             file.raw_name)
             continue
 
         # Unless told to move all, only move if file was renamed
         if not settings.force_move and file.rename_failed:
-            logging.warning('Skipping file as it could not be renamed: ' + file.raw_name)
+            logging.warning('Skipping file as it could not be renamed: %s', file.raw_name)
             continue
 
         # Don't set this until certain file has been moved, so it is not deleted
@@ -122,13 +122,13 @@ def move_files(move_list, settings): # pylint: disable=too-many-branches, too-ma
             # Don't bother clobbering self
             if os.path.normpath(os.path.normcase(full_out_path)) == \
                os.path.normpath(os.path.normcase(file.original_path)):
-                logging.info('Skipping moving file onto itself at: ' + file.original_path)
+                logging.info('Skipping moving file onto itself at: %s', file.original_path)
                 continue
             logging.info('Moving/renaming file:\nFrom: ' + file.original_path + '\nTo: ' + \
                          full_out_path)
             # Create the destination folder if it doesn't exist
             if not os.path.exists(out_dir):
-                logging.info('Creating destination folder: ' + out_dir)
+                logging.info('Creating destination folder: %s', out_dir)
                 if not settings.trial_run:
                     os.makedirs(out_dir)
 
@@ -145,14 +145,14 @@ def move_files(move_list, settings): # pylint: disable=too-many-branches, too-ma
                         try:
                             shutil.rmtree(full_out_path)
                         except (OSError, FileNotFoundError) as err:
-                            logging.error('Error removing directory at: ' + full_out_path +
-                                          '\n' + str(err))
-                            logging.error('Skipping moving file to: ' + full_out_path)
+                            logging.error('Error removing directory at: %s\n%s', full_out_path,
+                                          str(err))
+                            logging.error('Skipping moving file to: %s', full_out_path)
                             continue
                         except: # pylint: disable=bare-except
                             logging.error('An unhandled exception occurred while removing '
-                                          'directory at: ' + full_out_path)
-                            logging.error('Skipping moving file to: ' + full_out_path)
+                                          'directory at: %s', full_out_path)
+                            logging.error('Skipping moving file to: %s', full_out_path)
                             continue
                     else:
                         logging.warning('Skipping to avoid clobbering.')
@@ -170,21 +170,20 @@ def move_files(move_list, settings): # pylint: disable=too-many-branches, too-ma
                 try:
                     shutil.copy2(file.original_path, full_out_path)
                 except (OSError, FileNotFoundError) as err:
-                    logging.error('Error copying file to: ' + full_out_path +
-                                  '\n' + str(err))
-                    logging.error('Skipping moving file to: ' + full_out_path)
+                    logging.error('Error copying file to: %s\n%s', full_out_path, str(err))
+                    logging.error('Skipping moving file to: %s', full_out_path)
                     continue
                 except: # pylint: disable=bare-except
-                    logging.error('An unhandled exception occurred while copying file to: ' +
+                    logging.error('An unhandled exception occurred while copying file to: %s',
                                   full_out_path)
-                    logging.error('Skipping moving file to: ' + full_out_path)
+                    logging.error('Skipping moving file to: %s', full_out_path)
                     continue
             moved = True
 
         # Now that it's been copied everywhere, remove the file (unless keeping or didn't move)
         if not settings.copy and moved:
             # Only remove original if it was successfully moved
-            logging.info('Removing original file at: ' + file.original_path)
+            logging.info('Removing original file at: %s', file.original_path)
             if not settings.trial_run:
                 os.remove(file.original_path)
 
@@ -318,16 +317,16 @@ class AutotagicalFile: # pylint: disable=too-many-instance-attributes, too-few-p
                 # Check it doesn't match any ignore pattern
                 for ign_pattern in ignore_patterns:
                     if ign_pattern.fullmatch(name):
-                        logging.info('Skipping file due to ignore file: ' + path)
+                        logging.info('Skipping file due to ignore file: %s', path)
                         return None
-                logging.debug('Found file to process: ' + path)
+                logging.debug('Found file to process: %s', path)
                 # Return the file
                 return cls(name=match.group('file'), tags=match.group('raw_tags'),
                            extension=match.group('extension'),
                            tag_array=pattern['tag_split_pattern'].split(match.group('tags')),
                            raw_name=name, original_path=path)
         # File was untagged, so return Non
-        logging.info('Skipping untagged file: ' + path)
+        logging.info('Skipping untagged file: %s', path)
         return None
 
 class AutotagicalFileHandler:
@@ -399,20 +398,19 @@ class AutotagicalFileHandler:
         '''
         # Try to open file
         try:
-            ignore_file = open(path, 'r')
-            # For each line
-            for line in ignore_file:
-                # Try to compile line as a regex or warn
-                try:
-                    self.__ignore_patterns.append(re.compile(line.strip()))
-                except re.error as err:
-                    logging.warning('Regex error in ignore file:  ' + line  + str(err))
-            ignore_file.close()
-            logging.info('Loaded ignore file: ' + path)
-            logging.debug('Ignore patterns: ' + str(self.__ignore_patterns))
-            return True
+            with open(path, 'r') as ignore_file:
+                # For each line
+                for line in ignore_file:
+                    # Try to compile line as a regex or warn
+                    try:
+                        self.__ignore_patterns.append(re.compile(line.strip()))
+                    except re.error as err:
+                        logging.warning('Regex error in ignore file:  %s\n%s', line, str(err))
+                logging.info('Loaded ignore file: %s', path)
+                logging.debug('Ignore patterns: %s', str(self.__ignore_patterns))
+                return True
         except IOError:
-            logging.error('Specified ignore file missing or cannot be opened: ' + path)
+            logging.error('Specified ignore file missing or cannot be opened: %s', path)
         except: # pylint: disable=bare-except
             logging.error('An unhandled execption occured while loading ignore file.')
         return False
@@ -439,7 +437,7 @@ class AutotagicalFileHandler:
             # Only need to do more serious checking if file names match
             if file.raw_name == name:
                 if os.path.samefile(file.original_path, path):
-                    logging.info('Skipping double processing the file at: ' + path)
+                    logging.info('Skipping double processing the file at: %s', path)
                     return False
         return True
 
@@ -498,7 +496,7 @@ class AutotagicalFileHandler:
                                 if to_append:
                                     self.__file_list.append(to_append)
         except FileNotFoundError as err:
-            logging.error('Error with input folder: ' + str(err))
+            logging.error('Error with input folder: %s', str(err))
             return False
         # If no exceptions, return True
         return True

@@ -1,10 +1,10 @@
 # autotagical
 
 *autotagical* is a utility to automagically rename and sort tagged files (such as those produced by
-[TagSpaces](https://github.com/tagspaces/tagspaces)) according to user-defined schemas.  It reads in tagged files from one of more input
-directories then renames and/or moves them to an output folder hierarchy according to rules
-specified in user-provided schemas.  It is intended for use in concert with file tagging software,
-e.g. [TagSpaces](https://github.com/tagspaces/tagspaces).
+[TagSpaces](https://github.com/tagspaces/tagspaces)) according to user-defined schemas.  It reads
+in tagged files from one of more input directories then renames and/or moves them to an output
+folder hierarchy according to rules specified in user-provided schemas.  It is intended for use in
+concert with file tagging software, e.g. [TagSpaces](https://github.com/tagspaces/tagspaces).
 
 ## Getting Started/Installation
 
@@ -14,7 +14,8 @@ e.g. [TagSpaces](https://github.com/tagspaces/tagspaces).
 pip install autotagical
 ```
 
-If you're using *autotagical* by cloning this repository, then you'll need to install the following requirements, e.g. with *pip*:
+If you'd like to run *autotagical* by cloning this repository, then you'll need to install the
+following requirements, e.g. with *pip*:
 
 * `setuptools`
 * `jsonschema>=3`
@@ -68,7 +69,8 @@ used with -R.
 
 ### Schema Options
 These options specify the rules for moving/renaming files and are the heart of *autotagical*.
-Information on the structure of these files may be found below in the [Category Format](#category-format) and [Schema Format](#schema-format) sections.
+Information on the structure of these files may be found below in the
+[Category Format](#category-format) and [Schema Format](#schema-format) sections.
 
 * [-c/--categoriies <category file>] -- Path to a file to read tag categories (tag groups) from.
 May be specified more than once (categories will be combined).  Files may be in either the
@@ -149,17 +151,25 @@ highest to lowest, with each overriding any settings from lower priority sources
   1. `.autotagrc` file in `autotagical` folder.
 
 ### Config File Format
-`.autotagrc` (or any config file specified via command-line) should have the same format as any command line arguments one would otherwise care to pass.  **Unsafe options will be ignored in config files,** i.e. `--force` and `--yes` will have no effect if set in a config file.  This is to prevent data loss without explicit user input.  Whitespace and newlines are ignored, e.g. one might write:
+`.autotagrc` (or any config file specified via command-line) should have the same format as any
+command line arguments one would otherwise care to pass.  **Unsafe options will be ignored in
+config files,** i.e. `--force` and `--yes` will have no effect if set in a config file.  This is to
+prevent data loss without explicit user input.  Whitespace and newlines are ignored, e.g. one might
+write:
+
 ```
 -H
 
   -P
 ```
+
 in a config file to process hidden and ignore Windows-specific warnings.
 
 ## Category Format
 
-*autotagical* is capable of reading the JSON files produced by exporting tag groups from [TagSpaces](https://github.com/tagspaces/tagspaces).  Alternately, categories may be defined in a more simple, human-readable fashion in JSON as follows:
+*autotagical* is capable of reading the JSON files produced by exporting tag groups from
+[TagSpaces](https://github.com/tagspaces/tagspaces).  Alternately, categories may be defined in a
+more simple, human-readable fashion in JSON as follows:
 
 ```
 {
@@ -176,7 +186,8 @@ in a config file to process hidden and ignore Windows-specific warnings.
 ```
 
 ## Schema Format
-A schema is defined in a human-readable fashion in JSON and should consist of a single object as follows:
+A schema is defined in a human-readable fashion in JSON and should consist of a single object as
+follows:
 
 ```
 {
@@ -398,7 +409,7 @@ hidden as Windows does it.  This is most likely a **Won’t Fix**.
 
 ## Tests
 
-`autotagical` may be tested by running:
+`autotagical` may be tested by cloning this repository and running:
 
 ```
 python setup.py test
@@ -414,4 +425,5 @@ depending on your *python* installation.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GNU General Public License v3.0 - see the
+[LICENSE.md](LICENSE.md) file for details

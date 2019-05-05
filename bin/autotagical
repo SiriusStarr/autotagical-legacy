@@ -38,7 +38,7 @@ if __name__ == '__main__':
     SETTINGS = AutotagicalSettings()
 
     # Print welcome message
-    logging.info('autotagical v' + version)
+    logging.info('autotagical v%s', version)
     if SETTINGS.trial_run:
         logging.info('TRIAL MODE.  Reported changes will not actually be made.')
 
