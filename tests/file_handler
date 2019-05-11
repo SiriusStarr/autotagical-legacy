@@ -1,6 +1,6 @@
-==================================
+========================
 autotagical.file_handler
-==================================
+========================
 
 Setup
 =====
@@ -13,18 +13,18 @@ Silence logging, as a lot of tests will deliberate do things that result in erro
 >>> import logging
 >>> logging.basicConfig(level=logging.CRITICAL)
 
-Test Categories
----------------
-Set up a basic categories object.
+Test Groups
+-----------
+Set up a basic tag groups object.
 
 >>> import sys
->>> from autotagical.categories import AutotagicalCategories
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> from autotagical.groups import AutotagicalGroups
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -87,80 +87,80 @@ Set up test schemas.
 ...     "Test[0-9]{4}\\.txt",
 ...     "also this\\.txt"
 ...   ],
-...   "renaming_schema": [
+...   "renaming_schemas": [
 ...     {
-...       "filters": [
-...         "/C|nocat"
+...       "filter": [
+...         "/G|nogroup"
 ...       ],
 ...       "format_string": "empty"
 ...     },
 ...     {
-...       "filters": [
-...         "/C|American Styles",
-...         "/C|Belgian Styles"
+...       "filter": [
+...         "/G|American Styles",
+...         "/G|Belgian Styles"
 ...       ],
 ...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
 ...     }
 ...   ],
 ...   "movement_schema": [
 ...     {
-...       "filters": [
-...         "/C|Beer"
+...       "filter": [
+...         "/G|Beer"
 ...       ],
 ...       "subfolder": "Beer Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
-...             "/C|Belgian Styles"
+...           "filter": [
+...             "/G|Belgian Styles"
 ...           ],
 ...           "subfolder": "",
-...           "subfilters": []
+...           "sublevels": []
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "dipa"
 ...           ],
 ...           "subfolder": "DIPAs",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "motueka"
 ...               ],
 ...               "subfolder": "Motueka",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         }
 ...       ]
 ...     },
 ...     {
-...       "filters": [
-...         "/C|Whisky"
+...       "filter": [
+...         "/G|Whisky"
 ...       ],
 ...       "subfolder": "Whisky Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "highland",
 ...             "islay"
 ...           ],
 ...           "subfolder": "Scotch Bottles",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "islay"
 ...               ],
 ...               "subfolder": "Islay",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "bourbon"
 ...           ],
 ...           "subfolder": "Bourbon Bottles",
-...           "subfilters": []
+...           "sublevels": []
 ...         }
 ...       ]
 ...     }

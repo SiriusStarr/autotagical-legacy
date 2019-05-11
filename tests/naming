@@ -1,6 +1,6 @@
-============================
+==================
 autotagical.naming
-============================
+==================
 
 Setup
 =====
@@ -13,18 +13,18 @@ Silence logging, as a lot of tests will deliberate do things that result in erro
 >>> import logging
 >>> logging.basicConfig(level=logging.CRITICAL)
 
-Test Categories
----------------
-Set up a basic categories object.
+Test Groups
+-----------
+Set up a basic tag groups object.
 
 >>> import sys
->>> from autotagical.categories import AutotagicalCategories
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> from autotagical.groups import AutotagicalGroups
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -87,80 +87,80 @@ Set up test schemas.
 ...     "Test[0-9]{4}\\.txt",
 ...     "also this\\.txt"
 ...   ],
-...   "renaming_schema": [
+...   "renaming_schemas": [
 ...     {
-...       "filters": [
-...         "/C|nocat"
+...       "filter": [
+...         "/G|nogroup"
 ...       ],
 ...       "format_string": "empty"
 ...     },
 ...     {
-...       "filters": [
-...         "/C|American Styles",
-...         "/C|Belgian Styles"
+...       "filter": [
+...         "/G|American Styles",
+...         "/G|Belgian Styles"
 ...       ],
 ...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
 ...     }
 ...   ],
 ...   "movement_schema": [
 ...     {
-...       "filters": [
-...         "/C|Beer"
+...       "filter": [
+...         "/G|Beer"
 ...       ],
 ...       "subfolder": "Beer Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
-...             "/C|Belgian Styles"
+...           "filter": [
+...             "/G|Belgian Styles"
 ...           ],
 ...           "subfolder": "",
-...           "subfilters": []
+...           "sublevels": []
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "dipa"
 ...           ],
 ...           "subfolder": "DIPAs",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "motueka"
 ...               ],
 ...               "subfolder": "Motueka",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         }
 ...       ]
 ...     },
 ...     {
-...       "filters": [
-...         "/C|Whisky"
+...       "filter": [
+...         "/G|Whisky"
 ...       ],
 ...       "subfolder": "Whisky Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "highland",
 ...             "islay"
 ...           ],
 ...           "subfolder": "Scotch Bottles",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "islay"
 ...               ],
 ...               "subfolder": "Islay",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "bourbon"
 ...           ],
 ...           "subfolder": "Bourbon Bottles",
-...           "subfilters": []
+...           "sublevels": []
 ...         }
 ...       ]
 ...     }
@@ -174,7 +174,7 @@ True
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 True
@@ -275,13 +275,13 @@ Base Case
 >>> simplify_to_conditionals('Go away /?T|tags/| please.')
 'Go away /?|tags/T|tags/F|/E?| please.'
 
->>> simplify_to_conditionals('Go away /?C|categories/| please.')
-'Go away /?|/C|categories/T|categories/F|/E?| please.'
+>>> simplify_to_conditionals('Go away /?G|groups/| please.')
+'Go away /?|/G|groups/T|groups/F|/E?| please.'
 
 * Multiple operators
 
->>> simplify_to_conditionals('Go away /?C|categories/| and /?T|tags/| please.')
-'Go away /?|/C|categories/T|categories/F|/E?| and /?|tags/T|tags/F|/E?| please.'
+>>> simplify_to_conditionals('Go away /?G|groups/| and /?T|tags/| please.')
+'Go away /?|/G|groups/T|groups/F|/E?| and /?|tags/T|tags/F|/E?| please.'
 
 Complex Cases
 -------------
@@ -297,13 +297,13 @@ Complex Cases
 * Operators and ones to replace
 
 >>> simplify_to_conditionals('This is a complicated string with '
-...                          '/?|/C|category1/T|true/F|false/E?| conditional '
+...                          '/?|/G|group1/T|true/F|false/E?| conditional '
 ...                          'operators and /ITER|t/#|t/EITER|, /FILE|, /TAGS|, '
-...                          'and /EXT| operators and /?T|Tag z!/| or maybe /?C|cat uh gories/| '
+...                          'and /EXT| operators and /?T|Tag z!/| or maybe /?G|gro up s/| '
 ...                          'in it.')
-'This is a complicated string with /?|/C|category1/T|true/F|false/E?| conditional operators and /ITER|t/#|t/EITER|, /FILE|, /TAGS|, and /EXT| operators and /?|Tag z!/T|Tag z!/F|/E?| or maybe /?|/C|cat uh gories/T|cat uh gories/F|/E?| in it.'
+'This is a complicated string with /?|/G|group1/T|true/F|false/E?| conditional operators and /ITER|t/#|t/EITER|, /FILE|, /TAGS|, and /EXT| operators and /?|Tag z!/T|Tag z!/F|/E?| or maybe /?|/G|gro up s/T|gro up s/F|/E?| in it.'
 
-evaluate_conditionals(format_string, tag_array, categories)
+evaluate_conditionals(format_string, tag_array, tag_groups)
 ===========================================================
 
 Takes a format string and evaluates the conditional operators based on the tag array.
@@ -313,23 +313,23 @@ Edge Cases
 
 * Empty format string
 
->>> evaluate_conditionals('', test_tags_1, test_categories)
+>>> evaluate_conditionals('', test_tags_1, test_groups)
 ''
 
 * Empty Tags
 
->>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', [], test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', [], test_groups)
 'This is a not dipa conditional operator.'
 
 * Both Empty
 
->>> evaluate_conditionals('', [], test_categories)
+>>> evaluate_conditionals('', [], test_groups)
 ''
 
 Base Case
 ---------
 
->>> evaluate_conditionals('The base case contains no operators.', test_tags_1, test_categories)
+>>> evaluate_conditionals('The base case contains no operators.', test_tags_1, test_groups)
 'The base case contains no operators.'
 
 Simple Cases
@@ -337,12 +337,12 @@ Simple Cases
 
 * True
 
->>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', test_tags_1, test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', test_tags_1, test_groups)
 'This is a DIPA! conditional operator.'
 
 * False
 
->>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', test_tags_2, test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|not dipa/E?| conditional operator.', test_tags_2, test_groups)
 'This is a not dipa conditional operator.'
 
 Complex Cases
@@ -350,47 +350,47 @@ Complex Cases
 
 * Blank replacements
 
->>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|/E?| conditional operator.', test_tags_1, test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|/E?| conditional operator.', test_tags_1, test_groups)
 'This is a DIPA! conditional operator.'
->>> evaluate_conditionals('This is a /?|dipa/T|/F|not dipa/E?| conditional operator.', test_tags_1, test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|/F|not dipa/E?| conditional operator.', test_tags_1, test_groups)
 'This is a  conditional operator.'
->>> evaluate_conditionals('This is a /?|dipa/T|/F|/E?| conditional operator.', test_tags_1, test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|/F|/E?| conditional operator.', test_tags_1, test_groups)
 'This is a  conditional operator.'
->>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|/E?| conditional operator.', test_tags_2, test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|DIPA!/F|/E?| conditional operator.', test_tags_2, test_groups)
 'This is a  conditional operator.'
->>> evaluate_conditionals('This is a /?|dipa/T|/F|not dipa/E?| conditional operator.', test_tags_2, test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|/F|not dipa/E?| conditional operator.', test_tags_2, test_groups)
 'This is a not dipa conditional operator.'
->>> evaluate_conditionals('This is a /?|dipa/T|/F|/E?| conditional operator.', test_tags_2, test_categories)
+>>> evaluate_conditionals('This is a /?|dipa/T|/F|/E?| conditional operator.', test_tags_2, test_groups)
 'This is a  conditional operator.'
 
 * Complex conditions
 
->>> complex_filter = '/C|American Styles/&|/!|dipa'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_1, test_categories)
+>>> complex_filter = '/G|American Styles/&|/!|dipa'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_1, test_groups)
 'This is a n conditional operator.'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_2, test_categories)
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_2, test_groups)
 'This is a y conditional operator.'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_3, test_categories)
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_tags_3, test_groups)
 'This is a n conditional operator.'
 
 * Multiple conditionals
 
->>> complex_filter = '/C|American Styles/&|/!|dipa'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_1, test_categories)
+>>> complex_filter = '/G|American Styles/&|/!|dipa'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/G|Beer/T|yes/F|no/E?| another.', test_tags_1, test_groups)
 'This is a n conditional operator and yes another.'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_2, test_categories)
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/G|Beer/T|yes/F|no/E?| another.', test_tags_2, test_groups)
 'This is a y conditional operator and yes another.'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_4, test_categories)
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator and /?|/G|Beer/T|yes/F|no/E?| another.', test_tags_4, test_groups)
 'This is a n conditional operator and no another.'
 
 * Operators within conditionals
 
->>> complex_filter = '/C|American Styles/&|/!|dipa'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_1, test_categories)
+>>> complex_filter = '/G|American Styles/&|/!|dipa'
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/G|Beer/T|yes/F|no/E?| another.', test_tags_1, test_groups)
 'This is a /EXT| conditional operator and yes another.'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_2, test_categories)
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/G|Beer/T|yes/F|no/E?| another.', test_tags_2, test_groups)
 'This is a /FILE| conditional operator and yes another.'
->>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/C|Beer/T|yes/F|no/E?| another.', test_tags_4, test_categories)
+>>> evaluate_conditionals('This is a /?|' + complex_filter + '/T|/FILE|/F|/EXT|/E?| conditional operator and /?|/G|Beer/T|yes/F|no/E?| another.', test_tags_4, test_groups)
 'This is a /EXT| conditional operator and no another.'
 
 strip_iters(format_string)
@@ -410,11 +410,11 @@ Edge Case
 >>> strip_iters('This /#| should not be there.')
 Traceback (most recent call last):
     ...
-autotagical.schema.SchemaError: Occurrence /#| operator outside of /ITER| operator!
+autotagical.schema.SchemaError: Occurrence /#| operator outside of /ITER|!
 >>> strip_iters('This /#| should not be /ITER|a/EITER| there.')
 Traceback (most recent call last):
     ...
-autotagical.schema.SchemaError: Occurrence /#| operator outside of /ITER| operator!
+autotagical.schema.SchemaError: Occurrence /#| operator outside of /ITER|!
 
 Base Case
 ---------
@@ -514,14 +514,14 @@ Check multiple number insertions
 >>> evaluate_iters('This is a /ITER|a/#|/?|dipa/T|d/F|nd/E?|/#|c/EITER| iter operator.', 1)
 'This is a a1/?|dipa/T|d/F|nd/E?|1c iter operator.'
 
-substitute_operators(format_string, file, categories)
+substitute_operators(format_string, file, tag_groups)
 =====================================================
 
-Takes a format string without /ITER| operators, an AutotagicalFile object, and an AutotagicalCategories object, and fully evaluates all operators within the format string.
+Takes a format string without /ITER| operators, an AutotagicalFile object, and an AutotagicalGroups object, and fully evaluates all operators within the format string.
 
 Base Case
 ---------
->>> substitute_operators('The base case contains no operators.', test_file_1, test_categories)
+>>> substitute_operators('The base case contains no operators.', test_file_1, test_groups)
 'The base case contains no operators.'
 
 Edge Cases
@@ -529,7 +529,7 @@ Edge Cases
 
 * Empty format string
 
->>> substitute_operators('', test_file_1, test_categories)
+>>> substitute_operators('', test_file_1, test_groups)
 Traceback (most recent call last):
     ...
 autotagical.schema.SchemaError: Completely empty format string!
@@ -539,17 +539,17 @@ Simple Operators
 
 * /FILE| operator
 
->>> substitute_operators('This is /FILE|.', test_file_1, test_categories)
+>>> substitute_operators('This is /FILE|.', test_file_1, test_groups)
 'This is Test1999.'
 
 * /EXT| operator
 
->>> substitute_operators('This is /EXT|.', test_file_2, test_categories)
+>>> substitute_operators('This is /EXT|.', test_file_2, test_groups)
 'This is .txt.'
 
 * /TAGS| operator
 
->>> substitute_operators('This is /TAGS|.', test_file_3, test_categories)
+>>> substitute_operators('This is /TAGS|.', test_file_3, test_groups)
 'This is [tripel ale refrigerated].'
 
 Conditionals
@@ -558,63 +558,63 @@ Conditionals
 * Tag conditionals
 
 >>> substitute_operators('This is a /?T|scotch/| tag operator.',
-...                                 test_file_1, test_categories)
+...                                 test_file_1, test_groups)
 'This is a  tag operator.'
 >>> substitute_operators('This is a /?T|scotch/| tag operator.',
-...                                 test_file_4, test_categories)
+...                                 test_file_4, test_groups)
 'This is a scotch tag operator.'
 
-* Category conditionals
+* Group conditionals
 
->>> substitute_operators('This is a /?C|American Styles/| category operator.',
-...                                 test_file_1, test_categories)
-'This is a American Styles category operator.'
->>> substitute_operators('This is a /?C|American Styles/| category operator.',
-...                                 test_file_3, test_categories)
-'This is a  category operator.'
+>>> substitute_operators('This is a /?G|American Styles/| group operator.',
+...                                 test_file_1, test_groups)
+'This is a American Styles group operator.'
+>>> substitute_operators('This is a /?G|American Styles/| group operator.',
+...                                 test_file_3, test_groups)
+'This is a  group operator.'
 
 * Conditional operator
 
 >>> substitute_operators('This is a /?|dipa/T|dipa/F|not dipa/E?| conditional '
-...                                 'operator.', test_file_1, test_categories)
+...                                 'operator.', test_file_1, test_groups)
 'This is a dipa conditional operator.'
 >>> substitute_operators('This is a /?|dipa/T|dipa/F|not dipa/E?| conditional '
-...                                 'operator.', test_file_5, test_categories)
+...                                 'operator.', test_file_5, test_groups)
 'This is a not dipa conditional operator.'
 
 * Complex conditions
 
->>> complex_filter = '/C|American Styles/&|/!|dipa'
->>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_1, test_categories)
+>>> complex_filter = '/G|American Styles/&|/!|dipa'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_1, test_groups)
 'This is a n conditional operator.'
->>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_2, test_categories)
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_2, test_groups)
 'This is a y conditional operator.'
->>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_4, test_categories)
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|y/F|n/E?| conditional operator.', test_file_4, test_groups)
 'This is a n conditional operator.'
 
 
 * Combination of conditionals
 
->>> substitute_operators('This is a /?C|American Styles/| category and /?T|dipa/| tag operator.',
-...                                 test_file_1, test_categories)
-'This is a American Styles category and dipa tag operator.'
->>> substitute_operators('This is a /?C|American Styles/| category and /?T|dipa/| tag operator.',
-...                                 test_file_2, test_categories)
-'This is a American Styles category and  tag operator.'
->>> substitute_operators('This is a /?C|American Styles/| category and /?T|dipa/| tag operator.',
-...                                 test_file_3, test_categories)
-'This is a  category and  tag operator.'
+>>> substitute_operators('This is a /?G|American Styles/| group and /?T|dipa/| tag operator.',
+...                                 test_file_1, test_groups)
+'This is a American Styles group and dipa tag operator.'
+>>> substitute_operators('This is a /?G|American Styles/| group and /?T|dipa/| tag operator.',
+...                                 test_file_2, test_groups)
+'This is a American Styles group and  tag operator.'
+>>> substitute_operators('This is a /?G|American Styles/| group and /?T|dipa/| tag operator.',
+...                                 test_file_3, test_groups)
+'This is a  group and  tag operator.'
 
 
 Complex Combinations
 --------------------
 
->>> complex_filter = '/C|American Styles/&|/!|dipa'
->>> substitute_operators('This is a /?|' + complex_filter + '/T|/TAGS|/F|/EXT|/E?| conditional operator.', test_file_1, test_categories)
+>>> complex_filter = '/G|American Styles/&|/!|dipa'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/TAGS|/F|/EXT|/E?| conditional operator.', test_file_1, test_groups)
 'This is a .txt conditional operator.'
->>> substitute_operators('This is a /?|' + complex_filter + '/T|/FILE|/F|/TAGS|/E?| conditional operator.', test_file_2, test_categories)
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/FILE|/F|/TAGS|/E?| conditional operator.', test_file_2, test_groups)
 'This is a Test1532 conditional operator.'
->>> substitute_operators('This is a /?|' + complex_filter + '/T|/FILE|/F|/TAGS|/E?| conditional operator.', test_file_4, test_categories)
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/FILE|/F|/TAGS|/E?| conditional operator.', test_file_4, test_groups)
 'This is a [scotch laphroaig islay] conditional operator.'
 
 Bad Cases
@@ -622,12 +622,12 @@ Bad Cases
 
 * Bad operators (throws a warning but doesn't fail)
 
->>> substitute_operators('This is a string with a / messed up operator. /FILE|', test_file_1, test_categories)
+>>> substitute_operators('This is a string with a / messed up operator. /FILE|', test_file_1, test_groups)
 'This is a string with a / messed up operator. Test1999'
 
 * Nested conditionals (not supported)
 
->>> substitute_operators('So /?|tag/T|nested/?|tag2/T|conditionals/F|are/E?|bad/F|but/E?| do not fail./FILE|', test_file_1, test_categories)
+>>> substitute_operators('So /?|tag/T|nested/?|tag2/T|conditionals/F|are/E?|bad/F|but/E?| do not fail./FILE|', test_file_1, test_groups)
 'So arebad/F|but/E?| do not fail.Test1999'
 
 AutotagicalNamer(renaming_schema, unnamed_patterns)
@@ -643,7 +643,7 @@ Simple Tests
 >>> test_namer = AutotagicalNamer(empty_schema.renaming_schemas, test_schema.unnamed_patterns)
 Traceback (most recent call last):
     ...
-autotagical.schema.SchemaError: Completely empty renaming schema!
+autotagical.schema.SchemaError: Completely empty renaming schemas!
 >>> AutotagicalNamer(test_schema.renaming_schemas, [])
 Traceback (most recent call last):
     ...
@@ -687,7 +687,7 @@ False
 >>> test_namer.check_if_unnamed(test_file_6.name + test_file_6.extension)
 False
 
-AutotagicalNamer.find_format_string(tag_array, categories)
+AutotagicalNamer.find_format_string(tag_array, tag_groups)
 ==========================================================
 
 Takes a file's tag array and finds the first matching renaming schema.
@@ -696,27 +696,27 @@ Edge Cases
 ----------
 
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
->>> test_namer.find_format_string([], test_categories)
+>>> test_namer.find_format_string([], test_groups)
 False
 
 Normal Case
 -----------
 
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
->>> test_namer.find_format_string(test_tags_1, test_categories)
+>>> test_namer.find_format_string(test_tags_1, test_groups)
 'Beer Bottle/ITER| /#|/EITER|'
->>> test_namer.find_format_string(test_tags_2, test_categories)
+>>> test_namer.find_format_string(test_tags_2, test_groups)
 'Beer Bottle/ITER| /#|/EITER|'
->>> test_namer.find_format_string(test_tags_3, test_categories)
+>>> test_namer.find_format_string(test_tags_3, test_groups)
 'Beer Bottle/ITER| /#|/EITER|'
->>> test_namer.find_format_string(test_tags_4, test_categories)
+>>> test_namer.find_format_string(test_tags_4, test_groups)
 False
->>> test_namer.find_format_string(test_tags_5, test_categories)
+>>> test_namer.find_format_string(test_tags_5, test_groups)
 False
->>> test_namer.find_format_string(test_tags_6, test_categories)
+>>> test_namer.find_format_string(test_tags_6, test_groups)
 False
 
-def determine_names(self, file_list, categories, force_name=False, force_fail_bad=False, clear_occurrences=False):
+def determine_names(self, file_list, tag_groups, force_name=False, force_fail_bad=False, clear_occurrences=False):
 =============================================================================================================================
 Takes a list of files and processes how they should be renamed according to a schema.
 
@@ -726,14 +726,14 @@ Edge Cases
 Empty file list
 
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
->>> test_namer.determine_names([], test_categories)
+>>> test_namer.determine_names([], test_groups)
 []
 
 Normal Function
 ---------------
 
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
->>> output = test_namer.determine_names(files, test_categories)
+>>> output = test_namer.determine_names(files, test_groups)
 >>> for f in output:
 ...     print(f) #doctest: +ELLIPSIS
 -----File-----
@@ -815,7 +815,7 @@ Force Name
 * With failing a force name == name failed
 
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
->>> output = test_namer.determine_names(files, test_categories, True, True)
+>>> output = test_namer.determine_names(files, test_groups, True, True)
 >>> for f in output:
 ...     print(f) #doctest: +ELLIPSIS
 -----File-----
@@ -894,7 +894,7 @@ Force Name
 * With failing a force name != name failed
 
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
->>> output = test_namer.determine_names(files, test_categories, True, False)
+>>> output = test_namer.determine_names(files, test_groups, True, False)
 >>> for f in output:
 ...     print(f) #doctest: +ELLIPSIS
 -----File-----
@@ -976,8 +976,8 @@ Clear Occurrences
 * Without clearing
 
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
->>> output = test_namer.determine_names(files, test_categories, True, True, False)
->>> output = test_namer.determine_names(files, test_categories, True, True, False)
+>>> output = test_namer.determine_names(files, test_groups, True, True, False)
+>>> output = test_namer.determine_names(files, test_groups, True, True, False)
 >>> for f in output:
 ...     print(f) #doctest: +ELLIPSIS
 -----File-----
@@ -1057,8 +1057,8 @@ Clear Occurrences
 * With clearing
 
 >>> test_namer = AutotagicalNamer(test_schema.renaming_schemas, test_schema.unnamed_patterns)
->>> output = test_namer.determine_names(files, test_categories, True, True, True)
->>> output = test_namer.determine_names(files, test_categories, True, True, True)
+>>> output = test_namer.determine_names(files, test_groups, True, True, True)
+>>> output = test_namer.determine_names(files, test_groups, True, True, True)
 >>> for f in output:
 ...     print(f) #doctest: +ELLIPSIS
 -----File-----

@@ -1,6 +1,6 @@
-===============================
+=====================
 autotagical.filtering
-===============================
+=====================
 
 Setup
 =====
@@ -13,17 +13,17 @@ Silence logging, as a lot of tests will deliberate do things that result in erro
 >>> import logging
 >>> logging.basicConfig(level=logging.CRITICAL)
 
-Test Categories
----------------
-Set up a basic categories object.
+Test Groups
+-----------
+Set up a basic tag groups object.
 
->>> from autotagical.categories import AutotagicalCategories
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> from autotagical.groups import AutotagicalGroups
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -77,31 +77,31 @@ Set up basic tags.
 Import Functions
 ----------------
 
->>> from autotagical.filtering import split_filter_to_conditions, check_condition, check_against_filter, check_against_filters
+>>> from autotagical.filtering import split_condition_set_to_conditions, check_condition, check_against_condition_set, check_against_filter
 
-split_filter_to_conditions(input_filter)
+split_condition_set_to_conditions(condition_set)
 ========================================
-Takes a single filter and splits it at the and operator: /&|  This function warns if it encounters what looks to be a malformed filter using *logging.warning()*.
+Takes a condition_set and splits it at the and operator: /&|  This function warns if it encounters what looks to be a malformed condition_set.
 
 Base Cases
 ----------
 * Empty.  This should throw a warning (to logs) but not fail.
 
->>> split_filter_to_conditions('')
+>>> split_condition_set_to_conditions('')
 []
 
 * No operators at all.
 
->>> split_filter_to_conditions('scotch')
+>>> split_condition_set_to_conditions('scotch')
 ['scotch']
 
 * No /&| operators but with other special operators.
 
->>> split_filter_to_conditions('/C|Whisky')
-['/C|Whisky']
->>> split_filter_to_conditions('/*|')
+>>> split_condition_set_to_conditions('/G|Whisky')
+['/G|Whisky']
+>>> split_condition_set_to_conditions('/*|')
 ['/*|']
->>> split_filter_to_conditions('/!|ale')
+>>> split_condition_set_to_conditions('/!|ale')
 ['/!|ale']
 
 Single /&| Operator
@@ -109,119 +109,101 @@ Single /&| Operator
 
 * No other operators at all.
 
->>> split_filter_to_conditions('refrigerated/&|dipa')
+>>> split_condition_set_to_conditions('refrigerated/&|dipa')
 ['refrigerated', 'dipa']
 
 * With other operators.
 
->>> split_filter_to_conditions('/C|American Styles/&|/!|dipa')
-['/C|American Styles', '/!|dipa']
->>> split_filter_to_conditions('/C|American Styles/&|/!|/*|')
-['/C|American Styles', '/!|/*|']
+>>> split_condition_set_to_conditions('/G|American Styles/&|/!|dipa')
+['/G|American Styles', '/!|dipa']
+>>> split_condition_set_to_conditions('/G|American Styles/&|/!|/*|')
+['/G|American Styles', '/!|/*|']
 
 Multiple /&| Operators
 ----------------------
 
 * No other operators at all.
 
->>> split_filter_to_conditions('ale/&|refrigerated/&|cascade')
+>>> split_condition_set_to_conditions('ale/&|refrigerated/&|cascade')
 ['ale', 'refrigerated', 'cascade']
 
 * With other operators.
 
->>> split_filter_to_conditions('ale/&|/!|refrigerated/&|/C|American Styles')
-['ale', '/!|refrigerated', '/C|American Styles']
+>>> split_condition_set_to_conditions('ale/&|/!|refrigerated/&|/G|American Styles')
+['ale', '/!|refrigerated', '/G|American Styles']
 
-Malformed Filters
------------------
+Malformed Condition Sets
+------------------------
 These should throw warnings (to logs) but not fail.
 
 * Missing tag after/before/between /&|.
 
->>> split_filter_to_conditions('bad filter/&|')
+>>> split_condition_set_to_conditions('bad filter/&|')
 ['bad filter']
->>> split_filter_to_conditions('/&|bad filter')
+>>> split_condition_set_to_conditions('/&|bad filter')
 ['bad filter']
->>> split_filter_to_conditions('bad filter/&|/&|still bad')
+>>> split_condition_set_to_conditions('bad filter/&|/&|still bad')
 ['bad filter', 'still bad']
 
-Wrong Types In Schema
----------------------
-This should be prevented by validation, but an exception will be thrown if encountered.
-
-* Number
-
->>> split_filter_to_conditions(117)
-Traceback (most recent call last):
-    ...
-autotagical.filtering.FilterError: Wrong type encountered in filter: 117 is of type <class 'int'>
-
-* List
-
->>> split_filter_to_conditions(['ale/&|refrigerated/&|cascade'])
-Traceback (most recent call last):
-    ...
-autotagical.filtering.FilterError: Wrong type encountered in filter: ['ale/&|refrigerated/&|cascade'] is of type <class 'list'>
-
-check_condition(tag_array, condition, categories)
+check_condition(tag_array, condition, tag_groups)
 =================================================
-Takes a list of tags, a single condition to check against, and an *AutotagicalCategories* object and determines whether or not the tags match the condition.
+Takes a list of tags, a single condition to check against, and an *AutotagicalGroups* object and determines whether or not the tags match the condition.
 
 Base Cases
 ----------
 
 * Empty condition; should throw an exception.
 
->>> check_condition(test_tags_1, '', test_categories)
+>>> check_condition(test_tags_1, '', test_groups)
 Traceback (most recent call last):
     ...
 autotagical.filtering.FilterError: Malformed condition encountered: ""
 
 * Single tag.
 
->>> check_condition(test_tags_1, 'refrigerated', test_categories)
+>>> check_condition(test_tags_1, 'refrigerated', test_groups)
 True
->>> check_condition(test_tags_2, 'refrigerated', test_categories)
+>>> check_condition(test_tags_2, 'refrigerated', test_groups)
 True
->>> check_condition(test_tags_3, 'refrigerated', test_categories)
+>>> check_condition(test_tags_3, 'refrigerated', test_groups)
 True
->>> check_condition(test_tags_4, 'refrigerated', test_categories)
+>>> check_condition(test_tags_4, 'refrigerated', test_groups)
 False
->>> check_condition(test_tags_5, 'refrigerated', test_categories)
+>>> check_condition(test_tags_5, 'refrigerated', test_groups)
 False
->>> check_condition(test_tags_6, 'refrigerated', test_categories)
+>>> check_condition(test_tags_6, 'refrigerated', test_groups)
 True
 
-Category (/C|) Operator
+Group (/G|) Operator
 -----------------------
 
->>> check_condition(test_tags_1, '/C|Whisky', test_categories)
+>>> check_condition(test_tags_1, '/G|Whisky', test_groups)
 False
->>> check_condition(test_tags_2, '/C|Whisky', test_categories)
+>>> check_condition(test_tags_2, '/G|Whisky', test_groups)
 False
->>> check_condition(test_tags_3, '/C|Whisky', test_categories)
+>>> check_condition(test_tags_3, '/G|Whisky', test_groups)
 False
->>> check_condition(test_tags_4, '/C|Whisky', test_categories)
+>>> check_condition(test_tags_4, '/G|Whisky', test_groups)
 True
->>> check_condition(test_tags_5, '/C|Whisky', test_categories)
+>>> check_condition(test_tags_5, '/G|Whisky', test_groups)
 True
->>> check_condition(test_tags_6, '/C|Whisky', test_categories)
+>>> check_condition(test_tags_6, '/G|Whisky', test_groups)
 False
 
 All (/\*|) Operator
 -------------------
 
->>> check_condition(test_tags_1, '/*|', test_categories)
+>>> check_condition(test_tags_1, '/*|', test_groups)
 True
->>> check_condition(test_tags_2, '/*|', test_categories)
+>>> check_condition(test_tags_2, '/*|', test_groups)
 True
->>> check_condition(test_tags_3, '/*|', test_categories)
+>>> check_condition(test_tags_3, '/*|', test_groups)
 True
->>> check_condition(test_tags_4, '/*|', test_categories)
+>>> check_condition(test_tags_4, '/*|', test_groups)
 True
->>> check_condition(test_tags_5, '/*|', test_categories)
+>>> check_condition(test_tags_5, '/*|', test_groups)
 True
->>> check_condition(test_tags_6, '/*|', test_categories)
+>>> check_condition(test_tags_6, '/*|', test_groups)
 True
 
 Not (/!|) Operator
@@ -229,150 +211,361 @@ Not (/!|) Operator
 
 * Negate tags.
 
->>> check_condition(test_tags_1, '/!|ale', test_categories)
+>>> check_condition(test_tags_1, '/!|ale', test_groups)
 False
->>> check_condition(test_tags_2, '/!|ale', test_categories)
+>>> check_condition(test_tags_2, '/!|ale', test_groups)
 False
->>> check_condition(test_tags_3, '/!|ale', test_categories)
+>>> check_condition(test_tags_3, '/!|ale', test_groups)
 False
->>> check_condition(test_tags_4, '/!|ale', test_categories)
+>>> check_condition(test_tags_4, '/!|ale', test_groups)
 True
->>> check_condition(test_tags_5, '/!|ale', test_categories)
+>>> check_condition(test_tags_5, '/!|ale', test_groups)
 True
->>> check_condition(test_tags_6, '/!|ale', test_categories)
+>>> check_condition(test_tags_6, '/!|ale', test_groups)
 True
 
 * Negate all operator.
 
->>> check_condition(test_tags_1, '/!|/*|', test_categories)
+>>> check_condition(test_tags_1, '/!|/*|', test_groups)
 False
->>> check_condition(test_tags_2, '/!|/*|', test_categories)
+>>> check_condition(test_tags_2, '/!|/*|', test_groups)
 False
->>> check_condition(test_tags_3, '/!|/*|', test_categories)
+>>> check_condition(test_tags_3, '/!|/*|', test_groups)
 False
->>> check_condition(test_tags_4, '/!|/*|', test_categories)
+>>> check_condition(test_tags_4, '/!|/*|', test_groups)
 False
->>> check_condition(test_tags_5, '/!|/*|', test_categories)
+>>> check_condition(test_tags_5, '/!|/*|', test_groups)
 False
->>> check_condition(test_tags_6, '/!|/*|', test_categories)
+>>> check_condition(test_tags_6, '/!|/*|', test_groups)
 False
 
-* Negate category conditions.
+* Negate group conditions.
 
->>> check_condition(test_tags_1, '/!|/C|American Styles', test_categories)
+>>> check_condition(test_tags_1, '/!|/G|American Styles', test_groups)
 False
->>> check_condition(test_tags_2, '/!|/C|American Styles', test_categories)
+>>> check_condition(test_tags_2, '/!|/G|American Styles', test_groups)
 False
->>> check_condition(test_tags_3, '/!|/C|American Styles', test_categories)
+>>> check_condition(test_tags_3, '/!|/G|American Styles', test_groups)
 True
->>> check_condition(test_tags_4, '/!|/C|American Styles', test_categories)
+>>> check_condition(test_tags_4, '/!|/G|American Styles', test_groups)
 True
->>> check_condition(test_tags_5, '/!|/C|American Styles', test_categories)
+>>> check_condition(test_tags_5, '/!|/G|American Styles', test_groups)
 True
->>> check_condition(test_tags_6, '/!|/C|American Styles', test_categories)
+>>> check_condition(test_tags_6, '/!|/G|American Styles', test_groups)
 True
 
 "Bad" Cases
 -----------
 
-* Categories that don't exist.
+* Tag groups that don't exist.
 
->>> check_condition(test_tags_1, '/C|nocategory', test_categories)
+>>> check_condition(test_tags_1, '/G|nogroup', test_groups)
 False
->>> check_condition(test_tags_2, '/C|nocategory', test_categories)
+>>> check_condition(test_tags_2, '/G|nogroup', test_groups)
 False
->>> check_condition(test_tags_3, '/C|nocategory', test_categories)
+>>> check_condition(test_tags_3, '/G|nogroup', test_groups)
 False
->>> check_condition(test_tags_4, '/C|nocategory', test_categories)
+>>> check_condition(test_tags_4, '/G|nogroup', test_groups)
 False
->>> check_condition(test_tags_5, '/C|nocategory', test_categories)
+>>> check_condition(test_tags_5, '/G|nogroup', test_groups)
 False
->>> check_condition(test_tags_6, '/C|nocategory', test_categories)
+>>> check_condition(test_tags_6, '/G|nogroup', test_groups)
 False
->>> check_condition(test_tags_1, '/!|/C|nocategory', test_categories)
+>>> check_condition(test_tags_1, '/!|/G|nogroup', test_groups)
 True
->>> check_condition(test_tags_2, '/!|/C|nocategory', test_categories)
+>>> check_condition(test_tags_2, '/!|/G|nogroup', test_groups)
 True
->>> check_condition(test_tags_3, '/!|/C|nocategory', test_categories)
+>>> check_condition(test_tags_3, '/!|/G|nogroup', test_groups)
 True
->>> check_condition(test_tags_4, '/!|/C|nocategory', test_categories)
+>>> check_condition(test_tags_4, '/!|/G|nogroup', test_groups)
 True
->>> check_condition(test_tags_5, '/!|/C|nocategory', test_categories)
+>>> check_condition(test_tags_5, '/!|/G|nogroup', test_groups)
 True
->>> check_condition(test_tags_6, '/!|/C|nocategory', test_categories)
+>>> check_condition(test_tags_6, '/!|/G|nogroup', test_groups)
 True
 
 * Bad operator order (should throw exception).
 
->>> check_condition(test_tags_1, '/C|/!|thisiswrong', test_categories)
+>>> check_condition(test_tags_1, '/G|/!|thisiswrong', test_groups)
 Traceback (most recent call last):
     ...
-autotagical.filtering.FilterError: Malformed condition encountered: "/C|/!|thisiswrong"
->>> check_condition(test_tags_1, 'thisiswrong/*|', test_categories)
+autotagical.filtering.FilterError: Malformed condition encountered: "/G|/!|thisiswrong"
+>>> check_condition(test_tags_1, 'thisiswrong/*|', test_groups)
 Traceback (most recent call last):
     ...
 autotagical.filtering.FilterError: Malformed condition encountered: "thisiswrong/*|"
->>> check_condition(test_tags_1, 'thisiswrong/!|', test_categories)
+>>> check_condition(test_tags_1, 'thisiswrong/!|', test_groups)
 Traceback (most recent call last):
     ...
 autotagical.filtering.FilterError: Malformed condition encountered: "thisiswrong/!|"
 
-check_against_filter(tag_array, single_filter, categories)
-==========================================================
-Takes a list of tags, a single filter, and and an *AutotagicalCategories* object and determines whether or not the tags match the filter.
+check_against_condition_set(tag_array, condition_set, tag_groups)
+=================================================================
+Takes a list of tags, a condition set, and and an *AutotagicalGroups* object and determines whether or not the tags match the condition set.
+
+* Empty condition set; should throw an exception.
+
+>>> check_against_condition_set(test_tags_1, '', test_groups)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed condition set encountered: Completely empty!
+
+* Single tag.
+
+>>> check_against_condition_set(test_tags_1, 'refrigerated', test_groups)
+True
+>>> check_against_condition_set(test_tags_2, 'refrigerated', test_groups)
+True
+>>> check_against_condition_set(test_tags_3, 'refrigerated', test_groups)
+True
+>>> check_against_condition_set(test_tags_4, 'refrigerated', test_groups)
+False
+>>> check_against_condition_set(test_tags_5, 'refrigerated', test_groups)
+False
+>>> check_against_condition_set(test_tags_6, 'refrigerated', test_groups)
+True
+
+Group (/G|) Operator
+-----------------------
+
+>>> check_against_condition_set(test_tags_1, '/G|Whisky', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, '/G|Whisky', test_groups)
+False
+>>> check_against_condition_set(test_tags_3, '/G|Whisky', test_groups)
+False
+>>> check_against_condition_set(test_tags_4, '/G|Whisky', test_groups)
+True
+>>> check_against_condition_set(test_tags_5, '/G|Whisky', test_groups)
+True
+>>> check_against_condition_set(test_tags_6, '/G|Whisky', test_groups)
+False
+
+All (/\*|) Operator
+-------------------
+
+>>> check_against_condition_set(test_tags_1, '/*|', test_groups)
+True
+>>> check_against_condition_set(test_tags_2, '/*|', test_groups)
+True
+>>> check_against_condition_set(test_tags_3, '/*|', test_groups)
+True
+>>> check_against_condition_set(test_tags_4, '/*|', test_groups)
+True
+>>> check_against_condition_set(test_tags_5, '/*|', test_groups)
+True
+>>> check_against_condition_set(test_tags_6, '/*|', test_groups)
+True
+
+Not (/!|) Operator
+------------------
+
+* Negate tags.
+
+>>> check_against_condition_set(test_tags_1, '/!|ale', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, '/!|ale', test_groups)
+False
+>>> check_against_condition_set(test_tags_3, '/!|ale', test_groups)
+False
+>>> check_against_condition_set(test_tags_4, '/!|ale', test_groups)
+True
+>>> check_against_condition_set(test_tags_5, '/!|ale', test_groups)
+True
+>>> check_against_condition_set(test_tags_6, '/!|ale', test_groups)
+True
+
+* Negate all operator.
+
+>>> check_against_condition_set(test_tags_1, '/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, '/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_3, '/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_4, '/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_5, '/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_6, '/!|/*|', test_groups)
+False
+
+* Negate group conditions.
+
+>>> check_against_condition_set(test_tags_1, '/!|/G|American Styles', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, '/!|/G|American Styles', test_groups)
+False
+>>> check_against_condition_set(test_tags_3, '/!|/G|American Styles', test_groups)
+True
+>>> check_against_condition_set(test_tags_4, '/!|/G|American Styles', test_groups)
+True
+>>> check_against_condition_set(test_tags_5, '/!|/G|American Styles', test_groups)
+True
+>>> check_against_condition_set(test_tags_6, '/!|/G|American Styles', test_groups)
+True
+
+And (/&|) Operator
+------------------
+
+* Single with tags.
+
+>>> check_against_condition_set(test_tags_1, 'ale/&|tripel', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, 'ale/&|tripel', test_groups)
+False
+>>> check_against_condition_set(test_tags_3, 'ale/&|tripel', test_groups)
+True
+>>> check_against_condition_set(test_tags_4, 'ale/&|tripel', test_groups)
+False
+>>> check_against_condition_set(test_tags_5, 'ale/&|tripel', test_groups)
+False
+>>> check_against_condition_set(test_tags_6, 'ale/&|tripel', test_groups)
+False
+
+* Multiple And's.
+
+>>> check_against_condition_set(test_tags_1, 'ale/&|refrigerated/&|cascade', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, 'ale/&|refrigerated/&|cascade', test_groups)
+True
+>>> check_against_condition_set(test_tags_3, 'ale/&|refrigerated/&|cascade', test_groups)
+False
+>>> check_against_condition_set(test_tags_4, 'ale/&|refrigerated/&|cascade', test_groups)
+False
+>>> check_against_condition_set(test_tags_5, 'ale/&|refrigerated/&|cascade', test_groups)
+False
+>>> check_against_condition_set(test_tags_6, 'ale/&|refrigerated/&|cascade', test_groups)
+False
+
+* Combinations of operators.
+
+>>> check_against_condition_set(test_tags_1, '/G|Beer/&|/!|dipa', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, '/G|Beer/&|/!|dipa', test_groups)
+True
+>>> check_against_condition_set(test_tags_3, '/G|Beer/&|/!|dipa', test_groups)
+True
+>>> check_against_condition_set(test_tags_4, '/G|Beer/&|/!|dipa', test_groups)
+False
+>>> check_against_condition_set(test_tags_5, '/G|Beer/&|/!|dipa', test_groups)
+False
+>>> check_against_condition_set(test_tags_6, '/G|Beer/&|/!|dipa', test_groups)
+False
+>>> check_against_condition_set(test_tags_1, '/G|American Styles/&|/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, '/G|American Styles/&|/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_3, '/G|American Styles/&|/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_4, '/G|American Styles/&|/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_5, '/G|American Styles/&|/!|/*|', test_groups)
+False
+>>> check_against_condition_set(test_tags_6, '/G|American Styles/&|/!|/*|', test_groups)
+False
+
+"Bad" Cases
+-----------
+
+* Tag groups that don't exist.
+
+>>> check_against_condition_set(test_tags_1, '/G|nogroup', test_groups)
+False
+>>> check_against_condition_set(test_tags_2, '/G|nogroup', test_groups)
+False
+>>> check_against_condition_set(test_tags_3, '/G|nogroup', test_groups)
+False
+>>> check_against_condition_set(test_tags_4, '/G|nogroup', test_groups)
+False
+>>> check_against_condition_set(test_tags_5, '/G|nogroup', test_groups)
+False
+>>> check_against_condition_set(test_tags_6, '/G|nogroup', test_groups)
+False
+>>> check_against_condition_set(test_tags_1, '/!|/G|nogroup', test_groups)
+True
+>>> check_against_condition_set(test_tags_2, '/!|/G|nogroup', test_groups)
+True
+>>> check_against_condition_set(test_tags_3, '/!|/G|nogroup', test_groups)
+True
+>>> check_against_condition_set(test_tags_4, '/!|/G|nogroup', test_groups)
+True
+>>> check_against_condition_set(test_tags_5, '/!|/G|nogroup', test_groups)
+True
+>>> check_against_condition_set(test_tags_6, '/!|/G|nogroup', test_groups)
+True
+
+* Bad operator order (should throw exception).
+
+>>> check_against_condition_set(test_tags_1, '/G|/!|thisiswrong', test_groups)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed condition encountered: "/G|/!|thisiswrong"
+>>> check_against_condition_set(test_tags_1, 'thisiswrong/*|', test_groups)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed condition encountered: "thisiswrong/*|"
+>>> check_against_condition_set(test_tags_1, 'thisiswrong/!|', test_groups)
+Traceback (most recent call last):
+    ...
+autotagical.filtering.FilterError: Malformed condition encountered: "thisiswrong/!|"
+
+check_against_filter(tag_array, check_filter, tag_groups)
+=========================================================
+Takes a list of tags, a filter, and and an *AutotagicalGroups* object and determines whether or not the tags match the filter.
 
 * Empty filter; should throw an exception.
 
->>> check_against_filter(test_tags_1, '', test_categories)
+>>> check_against_filter(test_tags_1, [], test_groups)
 Traceback (most recent call last):
     ...
 autotagical.filtering.FilterError: Malformed filter encountered: Completely empty!
 
 * Single tag.
 
->>> check_against_filter(test_tags_1, 'refrigerated', test_categories)
+>>> check_against_filter(test_tags_1, ['refrigerated'], test_groups)
 True
->>> check_against_filter(test_tags_2, 'refrigerated', test_categories)
+>>> check_against_filter(test_tags_2, ['refrigerated'], test_groups)
 True
->>> check_against_filter(test_tags_3, 'refrigerated', test_categories)
+>>> check_against_filter(test_tags_3, ['refrigerated'], test_groups)
 True
->>> check_against_filter(test_tags_4, 'refrigerated', test_categories)
+>>> check_against_filter(test_tags_4, ['refrigerated'], test_groups)
 False
->>> check_against_filter(test_tags_5, 'refrigerated', test_categories)
+>>> check_against_filter(test_tags_5, ['refrigerated'], test_groups)
 False
->>> check_against_filter(test_tags_6, 'refrigerated', test_categories)
+>>> check_against_filter(test_tags_6, ['refrigerated'], test_groups)
 True
 
-Category (/C|) Operator
+Group (/G|) Operator
 -----------------------
 
->>> check_against_filter(test_tags_1, '/C|Whisky', test_categories)
+>>> check_against_filter(test_tags_1, ['/G|Whisky'], test_groups)
 False
->>> check_against_filter(test_tags_2, '/C|Whisky', test_categories)
+>>> check_against_filter(test_tags_2, ['/G|Whisky'], test_groups)
 False
->>> check_against_filter(test_tags_3, '/C|Whisky', test_categories)
+>>> check_against_filter(test_tags_3, ['/G|Whisky'], test_groups)
 False
->>> check_against_filter(test_tags_4, '/C|Whisky', test_categories)
+>>> check_against_filter(test_tags_4, ['/G|Whisky'], test_groups)
 True
->>> check_against_filter(test_tags_5, '/C|Whisky', test_categories)
+>>> check_against_filter(test_tags_5, ['/G|Whisky'], test_groups)
 True
->>> check_against_filter(test_tags_6, '/C|Whisky', test_categories)
+>>> check_against_filter(test_tags_6, ['/G|Whisky'], test_groups)
 False
 
 All (/\*|) Operator
 -------------------
 
->>> check_against_filter(test_tags_1, '/*|', test_categories)
+>>> check_against_filter(test_tags_1, ['/*|'], test_groups)
 True
->>> check_against_filter(test_tags_2, '/*|', test_categories)
+>>> check_against_filter(test_tags_2, ['/*|'], test_groups)
 True
->>> check_against_filter(test_tags_3, '/*|', test_categories)
+>>> check_against_filter(test_tags_3, ['/*|'], test_groups)
 True
->>> check_against_filter(test_tags_4, '/*|', test_categories)
+>>> check_against_filter(test_tags_4, ['/*|'], test_groups)
 True
->>> check_against_filter(test_tags_5, '/*|', test_categories)
+>>> check_against_filter(test_tags_5, ['/*|'], test_groups)
 True
->>> check_against_filter(test_tags_6, '/*|', test_categories)
+>>> check_against_filter(test_tags_6, ['/*|'], test_groups)
 True
 
 Not (/!|) Operator
@@ -380,47 +573,47 @@ Not (/!|) Operator
 
 * Negate tags.
 
->>> check_against_filter(test_tags_1, '/!|ale', test_categories)
+>>> check_against_filter(test_tags_1, ['/!|ale'], test_groups)
 False
->>> check_against_filter(test_tags_2, '/!|ale', test_categories)
+>>> check_against_filter(test_tags_2, ['/!|ale'], test_groups)
 False
->>> check_against_filter(test_tags_3, '/!|ale', test_categories)
+>>> check_against_filter(test_tags_3, ['/!|ale'], test_groups)
 False
->>> check_against_filter(test_tags_4, '/!|ale', test_categories)
+>>> check_against_filter(test_tags_4, ['/!|ale'], test_groups)
 True
->>> check_against_filter(test_tags_5, '/!|ale', test_categories)
+>>> check_against_filter(test_tags_5, ['/!|ale'], test_groups)
 True
->>> check_against_filter(test_tags_6, '/!|ale', test_categories)
+>>> check_against_filter(test_tags_6, ['/!|ale'], test_groups)
 True
 
 * Negate all operator.
 
->>> check_against_filter(test_tags_1, '/!|/*|', test_categories)
+>>> check_against_filter(test_tags_1, ['/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_2, '/!|/*|', test_categories)
+>>> check_against_filter(test_tags_2, ['/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_3, '/!|/*|', test_categories)
+>>> check_against_filter(test_tags_3, ['/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_4, '/!|/*|', test_categories)
+>>> check_against_filter(test_tags_4, ['/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_5, '/!|/*|', test_categories)
+>>> check_against_filter(test_tags_5, ['/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_6, '/!|/*|', test_categories)
+>>> check_against_filter(test_tags_6, ['/!|/*|'], test_groups)
 False
 
-* Negate category conditions.
+* Negate group conditions.
 
->>> check_against_filter(test_tags_1, '/!|/C|American Styles', test_categories)
+>>> check_against_filter(test_tags_1, ['/!|/G|American Styles'], test_groups)
 False
->>> check_against_filter(test_tags_2, '/!|/C|American Styles', test_categories)
+>>> check_against_filter(test_tags_2, ['/!|/G|American Styles'], test_groups)
 False
->>> check_against_filter(test_tags_3, '/!|/C|American Styles', test_categories)
+>>> check_against_filter(test_tags_3, ['/!|/G|American Styles'], test_groups)
 True
->>> check_against_filter(test_tags_4, '/!|/C|American Styles', test_categories)
+>>> check_against_filter(test_tags_4, ['/!|/G|American Styles'], test_groups)
 True
->>> check_against_filter(test_tags_5, '/!|/C|American Styles', test_categories)
+>>> check_against_filter(test_tags_5, ['/!|/G|American Styles'], test_groups)
 True
->>> check_against_filter(test_tags_6, '/!|/C|American Styles', test_categories)
+>>> check_against_filter(test_tags_6, ['/!|/G|American Styles'], test_groups)
 True
 
 And (/&|) Operator
@@ -428,361 +621,132 @@ And (/&|) Operator
 
 * Single with tags.
 
->>> check_against_filter(test_tags_1, 'ale/&|tripel', test_categories)
+>>> check_against_filter(test_tags_1, ['ale/&|tripel'], test_groups)
 False
->>> check_against_filter(test_tags_2, 'ale/&|tripel', test_categories)
+>>> check_against_filter(test_tags_2, ['ale/&|tripel'], test_groups)
 False
->>> check_against_filter(test_tags_3, 'ale/&|tripel', test_categories)
+>>> check_against_filter(test_tags_3, ['ale/&|tripel'], test_groups)
 True
->>> check_against_filter(test_tags_4, 'ale/&|tripel', test_categories)
+>>> check_against_filter(test_tags_4, ['ale/&|tripel'], test_groups)
 False
->>> check_against_filter(test_tags_5, 'ale/&|tripel', test_categories)
+>>> check_against_filter(test_tags_5, ['ale/&|tripel'], test_groups)
 False
->>> check_against_filter(test_tags_6, 'ale/&|tripel', test_categories)
+>>> check_against_filter(test_tags_6, ['ale/&|tripel'], test_groups)
 False
 
 * Multiple And's.
 
->>> check_against_filter(test_tags_1, 'ale/&|refrigerated/&|cascade', test_categories)
+>>> check_against_filter(test_tags_1, ['ale/&|refrigerated/&|cascade'], test_groups)
 False
->>> check_against_filter(test_tags_2, 'ale/&|refrigerated/&|cascade', test_categories)
+>>> check_against_filter(test_tags_2, ['ale/&|refrigerated/&|cascade'], test_groups)
 True
->>> check_against_filter(test_tags_3, 'ale/&|refrigerated/&|cascade', test_categories)
+>>> check_against_filter(test_tags_3, ['ale/&|refrigerated/&|cascade'], test_groups)
 False
->>> check_against_filter(test_tags_4, 'ale/&|refrigerated/&|cascade', test_categories)
+>>> check_against_filter(test_tags_4, ['ale/&|refrigerated/&|cascade'], test_groups)
 False
->>> check_against_filter(test_tags_5, 'ale/&|refrigerated/&|cascade', test_categories)
+>>> check_against_filter(test_tags_5, ['ale/&|refrigerated/&|cascade'], test_groups)
 False
->>> check_against_filter(test_tags_6, 'ale/&|refrigerated/&|cascade', test_categories)
+>>> check_against_filter(test_tags_6, ['ale/&|refrigerated/&|cascade'], test_groups)
 False
 
 * Combinations of operators.
 
->>> check_against_filter(test_tags_1, '/C|Beer/&|/!|dipa', test_categories)
+>>> check_against_filter(test_tags_1, ['/G|Beer/&|/!|dipa'], test_groups)
 False
->>> check_against_filter(test_tags_2, '/C|Beer/&|/!|dipa', test_categories)
+>>> check_against_filter(test_tags_2, ['/G|Beer/&|/!|dipa'], test_groups)
 True
->>> check_against_filter(test_tags_3, '/C|Beer/&|/!|dipa', test_categories)
+>>> check_against_filter(test_tags_3, ['/G|Beer/&|/!|dipa'], test_groups)
 True
->>> check_against_filter(test_tags_4, '/C|Beer/&|/!|dipa', test_categories)
+>>> check_against_filter(test_tags_4, ['/G|Beer/&|/!|dipa'], test_groups)
 False
->>> check_against_filter(test_tags_5, '/C|Beer/&|/!|dipa', test_categories)
+>>> check_against_filter(test_tags_5, ['/G|Beer/&|/!|dipa'], test_groups)
 False
->>> check_against_filter(test_tags_6, '/C|Beer/&|/!|dipa', test_categories)
+>>> check_against_filter(test_tags_6, ['/G|Beer/&|/!|dipa'], test_groups)
 False
->>> check_against_filter(test_tags_1, '/C|American Styles/&|/!|/*|', test_categories)
+>>> check_against_filter(test_tags_1, ['/G|American Styles/&|/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_2, '/C|American Styles/&|/!|/*|', test_categories)
+>>> check_against_filter(test_tags_2, ['/G|American Styles/&|/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_3, '/C|American Styles/&|/!|/*|', test_categories)
+>>> check_against_filter(test_tags_3, ['/G|American Styles/&|/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_4, '/C|American Styles/&|/!|/*|', test_categories)
+>>> check_against_filter(test_tags_4, ['/G|American Styles/&|/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_5, '/C|American Styles/&|/!|/*|', test_categories)
+>>> check_against_filter(test_tags_5, ['/G|American Styles/&|/!|/*|'], test_groups)
 False
->>> check_against_filter(test_tags_6, '/C|American Styles/&|/!|/*|', test_categories)
+>>> check_against_filter(test_tags_6, ['/G|American Styles/&|/!|/*|'], test_groups)
+False
+
+"Or" Operation Of Multiple Condition Sets
+-----------------------------------------
+
+Multiple condition sets work as if combined with an "or" operator.
+
+>>> check_against_filter(test_tags_1, ['scotch', '/*|'], test_groups)
+True
+>>> check_against_filter(test_tags_2, ['scotch', '/*|'], test_groups)
+True
+>>> check_against_filter(test_tags_3, ['scotch', '/*|'], test_groups)
+True
+>>> check_against_filter(test_tags_4, ['scotch', '/*|'], test_groups)
+True
+>>> check_against_filter(test_tags_5, ['scotch', '/*|'], test_groups)
+True
+>>> check_against_filter(test_tags_6, ['scotch', '/*|'], test_groups)
+True
+>>> check_against_filter(test_tags_1, ['scotch', 'notag', 'ctz'], test_groups)
+True
+>>> check_against_filter(test_tags_2, ['scotch', 'notag', 'ctz'], test_groups)
+False
+>>> check_against_filter(test_tags_3, ['scotch', 'notag', 'ctz'], test_groups)
+False
+>>> check_against_filter(test_tags_4, ['scotch', 'notag', 'ctz'], test_groups)
+True
+>>> check_against_filter(test_tags_5, ['scotch', 'notag', 'ctz'], test_groups)
+False
+>>> check_against_filter(test_tags_6, ['scotch', 'notag', 'ctz'], test_groups)
 False
 
 "Bad" Cases
 -----------
 
-* Categories that don't exist.
+* Tag groups that don't exist.
 
->>> check_against_filter(test_tags_1, '/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_1, ['/G|nogroup'], test_groups)
 False
->>> check_against_filter(test_tags_2, '/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_2, ['/G|nogroup'], test_groups)
 False
->>> check_against_filter(test_tags_3, '/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_3, ['/G|nogroup'], test_groups)
 False
->>> check_against_filter(test_tags_4, '/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_4, ['/G|nogroup'], test_groups)
 False
->>> check_against_filter(test_tags_5, '/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_5, ['/G|nogroup'], test_groups)
 False
->>> check_against_filter(test_tags_6, '/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_6, ['/G|nogroup'], test_groups)
 False
->>> check_against_filter(test_tags_1, '/!|/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_1, ['/!|/G|nogroup'], test_groups)
 True
->>> check_against_filter(test_tags_2, '/!|/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_2, ['/!|/G|nogroup'], test_groups)
 True
->>> check_against_filter(test_tags_3, '/!|/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_3, ['/!|/G|nogroup'], test_groups)
 True
->>> check_against_filter(test_tags_4, '/!|/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_4, ['/!|/G|nogroup'], test_groups)
 True
->>> check_against_filter(test_tags_5, '/!|/C|nocategory', test_categories)
+>>> check_against_filter(test_tags_5, ['/!|/G|nogroup'], test_groups)
 True
->>> check_against_filter(test_tags_6, '/!|/C|nocategory', test_categories)
-True
-
-* Bad operator order (should throw exception).
-
->>> check_against_filter(test_tags_1, '/C|/!|thisiswrong', test_categories)
-Traceback (most recent call last):
-    ...
-autotagical.filtering.FilterError: Malformed condition encountered: "/C|/!|thisiswrong"
->>> check_against_filter(test_tags_1, 'thisiswrong/*|', test_categories)
-Traceback (most recent call last):
-    ...
-autotagical.filtering.FilterError: Malformed condition encountered: "thisiswrong/*|"
->>> check_against_filter(test_tags_1, 'thisiswrong/!|', test_categories)
-Traceback (most recent call last):
-    ...
-autotagical.filtering.FilterError: Malformed condition encountered: "thisiswrong/!|"
-
-Wrong Types In Schema
----------------------
-This should be prevented by validation, but an exception will be thrown if encountered.
-
-* Number
-
->>> check_against_filter(test_tags_1, 117, test_categories)
-Traceback (most recent call last):
-    ...
-autotagical.filtering.FilterError: Wrong type encountered in filter: 117 is of type <class 'int'>
-
-* List
-
->>> check_against_filter(test_tags_1, ['ale/&|refrigerated/&|cascade'], test_categories)
-Traceback (most recent call last):
-    ...
-autotagical.filtering.FilterError: Wrong type encountered in filter: ['ale/&|refrigerated/&|cascade'] is of type <class 'list'>
-
-check_against_filters(tag_array, filter_array, categories)
-==========================================================
-Takes a list of tags, a list of filters, and and an *AutotagicalCategories* object and determines whether or not the tags match at least one of the filters.
-
-* Empty filter; should throw an exception.
-
->>> check_against_filters(test_tags_1, [], test_categories)
-Traceback (most recent call last):
-    ...
-autotagical.filtering.FilterError: Malformed filter array encountered: Completely empty!
-
-* Single tag.
-
->>> check_against_filters(test_tags_1, ['refrigerated'], test_categories)
-True
->>> check_against_filters(test_tags_2, ['refrigerated'], test_categories)
-True
->>> check_against_filters(test_tags_3, ['refrigerated'], test_categories)
-True
->>> check_against_filters(test_tags_4, ['refrigerated'], test_categories)
-False
->>> check_against_filters(test_tags_5, ['refrigerated'], test_categories)
-False
->>> check_against_filters(test_tags_6, ['refrigerated'], test_categories)
-True
-
-Category (/C|) Operator
------------------------
-
->>> check_against_filters(test_tags_1, ['/C|Whisky'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['/C|Whisky'], test_categories)
-False
->>> check_against_filters(test_tags_3, ['/C|Whisky'], test_categories)
-False
->>> check_against_filters(test_tags_4, ['/C|Whisky'], test_categories)
-True
->>> check_against_filters(test_tags_5, ['/C|Whisky'], test_categories)
-True
->>> check_against_filters(test_tags_6, ['/C|Whisky'], test_categories)
-False
-
-All (/\*|) Operator
--------------------
-
->>> check_against_filters(test_tags_1, ['/*|'], test_categories)
-True
->>> check_against_filters(test_tags_2, ['/*|'], test_categories)
-True
->>> check_against_filters(test_tags_3, ['/*|'], test_categories)
-True
->>> check_against_filters(test_tags_4, ['/*|'], test_categories)
-True
->>> check_against_filters(test_tags_5, ['/*|'], test_categories)
-True
->>> check_against_filters(test_tags_6, ['/*|'], test_categories)
-True
-
-Not (/!|) Operator
-------------------
-
-* Negate tags.
-
->>> check_against_filters(test_tags_1, ['/!|ale'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['/!|ale'], test_categories)
-False
->>> check_against_filters(test_tags_3, ['/!|ale'], test_categories)
-False
->>> check_against_filters(test_tags_4, ['/!|ale'], test_categories)
-True
->>> check_against_filters(test_tags_5, ['/!|ale'], test_categories)
-True
->>> check_against_filters(test_tags_6, ['/!|ale'], test_categories)
-True
-
-* Negate all operator.
-
->>> check_against_filters(test_tags_1, ['/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_3, ['/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_4, ['/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_5, ['/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_6, ['/!|/*|'], test_categories)
-False
-
-* Negate category conditions.
-
->>> check_against_filters(test_tags_1, ['/!|/C|American Styles'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['/!|/C|American Styles'], test_categories)
-False
->>> check_against_filters(test_tags_3, ['/!|/C|American Styles'], test_categories)
-True
->>> check_against_filters(test_tags_4, ['/!|/C|American Styles'], test_categories)
-True
->>> check_against_filters(test_tags_5, ['/!|/C|American Styles'], test_categories)
-True
->>> check_against_filters(test_tags_6, ['/!|/C|American Styles'], test_categories)
-True
-
-And (/&|) Operator
-------------------
-
-* Single with tags.
-
->>> check_against_filters(test_tags_1, ['ale/&|tripel'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['ale/&|tripel'], test_categories)
-False
->>> check_against_filters(test_tags_3, ['ale/&|tripel'], test_categories)
-True
->>> check_against_filters(test_tags_4, ['ale/&|tripel'], test_categories)
-False
->>> check_against_filters(test_tags_5, ['ale/&|tripel'], test_categories)
-False
->>> check_against_filters(test_tags_6, ['ale/&|tripel'], test_categories)
-False
-
-* Multiple And's.
-
->>> check_against_filters(test_tags_1, ['ale/&|refrigerated/&|cascade'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['ale/&|refrigerated/&|cascade'], test_categories)
-True
->>> check_against_filters(test_tags_3, ['ale/&|refrigerated/&|cascade'], test_categories)
-False
->>> check_against_filters(test_tags_4, ['ale/&|refrigerated/&|cascade'], test_categories)
-False
->>> check_against_filters(test_tags_5, ['ale/&|refrigerated/&|cascade'], test_categories)
-False
->>> check_against_filters(test_tags_6, ['ale/&|refrigerated/&|cascade'], test_categories)
-False
-
-* Combinations of operators.
-
->>> check_against_filters(test_tags_1, ['/C|Beer/&|/!|dipa'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['/C|Beer/&|/!|dipa'], test_categories)
-True
->>> check_against_filters(test_tags_3, ['/C|Beer/&|/!|dipa'], test_categories)
-True
->>> check_against_filters(test_tags_4, ['/C|Beer/&|/!|dipa'], test_categories)
-False
->>> check_against_filters(test_tags_5, ['/C|Beer/&|/!|dipa'], test_categories)
-False
->>> check_against_filters(test_tags_6, ['/C|Beer/&|/!|dipa'], test_categories)
-False
->>> check_against_filters(test_tags_1, ['/C|American Styles/&|/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['/C|American Styles/&|/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_3, ['/C|American Styles/&|/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_4, ['/C|American Styles/&|/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_5, ['/C|American Styles/&|/!|/*|'], test_categories)
-False
->>> check_against_filters(test_tags_6, ['/C|American Styles/&|/!|/*|'], test_categories)
-False
-
-"Or" Operation Of Multiple Filters
-----------------------------------
-
-Multiple filters work as if combined with an "or" operator.
-
->>> check_against_filters(test_tags_1, ['scotch', '/*|'], test_categories)
-True
->>> check_against_filters(test_tags_2, ['scotch', '/*|'], test_categories)
-True
->>> check_against_filters(test_tags_3, ['scotch', '/*|'], test_categories)
-True
->>> check_against_filters(test_tags_4, ['scotch', '/*|'], test_categories)
-True
->>> check_against_filters(test_tags_5, ['scotch', '/*|'], test_categories)
-True
->>> check_against_filters(test_tags_6, ['scotch', '/*|'], test_categories)
-True
->>> check_against_filters(test_tags_1, ['scotch', 'notag', 'ctz'], test_categories)
-True
->>> check_against_filters(test_tags_2, ['scotch', 'notag', 'ctz'], test_categories)
-False
->>> check_against_filters(test_tags_3, ['scotch', 'notag', 'ctz'], test_categories)
-False
->>> check_against_filters(test_tags_4, ['scotch', 'notag', 'ctz'], test_categories)
-True
->>> check_against_filters(test_tags_5, ['scotch', 'notag', 'ctz'], test_categories)
-False
->>> check_against_filters(test_tags_6, ['scotch', 'notag', 'ctz'], test_categories)
-False
-
-"Bad" Cases
------------
-
-* Categories that don't exist.
-
->>> check_against_filters(test_tags_1, ['/C|nocategory'], test_categories)
-False
->>> check_against_filters(test_tags_2, ['/C|nocategory'], test_categories)
-False
->>> check_against_filters(test_tags_3, ['/C|nocategory'], test_categories)
-False
->>> check_against_filters(test_tags_4, ['/C|nocategory'], test_categories)
-False
->>> check_against_filters(test_tags_5, ['/C|nocategory'], test_categories)
-False
->>> check_against_filters(test_tags_6, ['/C|nocategory'], test_categories)
-False
->>> check_against_filters(test_tags_1, ['/!|/C|nocategory'], test_categories)
-True
->>> check_against_filters(test_tags_2, ['/!|/C|nocategory'], test_categories)
-True
->>> check_against_filters(test_tags_3, ['/!|/C|nocategory'], test_categories)
-True
->>> check_against_filters(test_tags_4, ['/!|/C|nocategory'], test_categories)
-True
->>> check_against_filters(test_tags_5, ['/!|/C|nocategory'], test_categories)
-True
->>> check_against_filters(test_tags_6, ['/!|/C|nocategory'], test_categories)
+>>> check_against_filter(test_tags_6, ['/!|/G|nogroup'], test_groups)
 True
 
 * Bad operator order (should throw exception).
 
->>> check_against_filters(test_tags_1, ['/C|/!|thisiswrong'], test_categories)
+>>> check_against_filter(test_tags_1, ['/G|/!|thisiswrong'], test_groups)
 Traceback (most recent call last):
     ...
-autotagical.filtering.FilterError: Malformed condition encountered: "/C|/!|thisiswrong"
->>> check_against_filters(test_tags_1, ['thisiswrong/*|'], test_categories)
+autotagical.filtering.FilterError: Malformed condition encountered: "/G|/!|thisiswrong"
+>>> check_against_filter(test_tags_1, ['thisiswrong/*|'], test_groups)
 Traceback (most recent call last):
     ...
 autotagical.filtering.FilterError: Malformed condition encountered: "thisiswrong/*|"
->>> check_against_filters(test_tags_1, ['thisiswrong/!|'], test_categories)
+>>> check_against_filter(test_tags_1, ['thisiswrong/!|'], test_groups)
 Traceback (most recent call last):
     ...
 autotagical.filtering.FilterError: Malformed condition encountered: "thisiswrong/!|"

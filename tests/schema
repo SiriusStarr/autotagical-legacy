@@ -1,6 +1,6 @@
-============================
+==================
 autotagical.schema
-============================
+==================
 
 Setup
 =====
@@ -30,27 +30,27 @@ As the constructor loads a JSON schema file, it needs to be tested.  This incide
 >>> test_schema = AutotagicalSchema()
 
 AutotagicalSchema.unnamed_patterns
-========================================
+==================================
 
 Returns the unnamed_patterns attribute.  Does not require testing.
 
 AutotagicalSchema.tag_formats
-========================================
+=============================
 
 Returns the tag_formats attribute.  Does not require testing.
 
-AutotagicalSchema.movement_schemas
-========================================
+AutotagicalSchema.movement_schema
+=================================
 
 Returns the movement_schema attribute.  Does not require testing.
 
 AutotagicalSchema.renaming_schemas
-========================================
+==================================
 
-Returns the renaming_schema attribute.  Does not require testing.
+Returns the renaming_schemas attribute.  Does not require testing.
 
 AutotagicalSchema.load_schema(json_input, append=False)
-=======================================================================
+=======================================================
 
 Loads a movement/renaming schema from JSON data.  Validates that the data matches a known
     schema first.
@@ -66,7 +66,7 @@ Base Cases
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 True
@@ -92,80 +92,80 @@ True
 ...     "Test[0-9]{4}\\.txt",
 ...     "also this\\.txt"
 ...   ],
-...   "renaming_schema": [
+...   "renaming_schemas": [
 ...     {
-...       "filters": [
-...         "/C|nocat"
+...       "filter": [
+...         "/G|nogroup"
 ...       ],
 ...       "format_string": "empty"
 ...     },
 ...     {
-...       "filters": [
-...         "/C|American Styles",
-...         "/C|Belgian Styles"
+...       "filter": [
+...         "/G|American Styles",
+...         "/G|Belgian Styles"
 ...       ],
 ...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
 ...     }
 ...   ],
 ...   "movement_schema": [
 ...     {
-...       "filters": [
-...         "/C|Beer"
+...       "filter": [
+...         "/G|Beer"
 ...       ],
 ...       "subfolder": "Beer Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
-...             "/C|Belgian Styles"
+...           "filter": [
+...             "/G|Belgian Styles"
 ...           ],
 ...           "subfolder": "",
-...           "subfilters": []
+...           "sublevels": []
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "dipa"
 ...           ],
 ...           "subfolder": "DIPAs",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "motueka"
 ...               ],
 ...               "subfolder": "Motueka",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         }
 ...       ]
 ...     },
 ...     {
-...       "filters": [
-...         "/C|Whisky"
+...       "filter": [
+...         "/G|Whisky"
 ...       ],
 ...       "subfolder": "Whisky Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "highland",
 ...             "islay"
 ...           ],
 ...           "subfolder": "Scotch Bottles",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "islay"
 ...               ],
 ...               "subfolder": "Islay",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "bourbon"
 ...           ],
 ...           "subfolder": "Bourbon Bottles",
-...           "subfilters": []
+...           "sublevels": []
 ...         }
 ...       ]
 ...     }
@@ -174,38 +174,38 @@ True
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Beer']
+  Movement Schema:
+    Filter: ['/G|Beer']
     Subfolder Name: "Beer Bottles"
-    Subfilters:
-      Filters: ['/C|Belgian Styles']
+    Sublevels:
+      Filter: ['/G|Belgian Styles']
       Subfolder Name: ""
-      Subfilters:
-      Filters: ['dipa']
+      Sublevels:
+      Filter: ['dipa']
       Subfolder Name: "DIPAs"
-      Subfilters:
-        Filters: ['motueka']
+      Sublevels:
+        Filter: ['motueka']
         Subfolder Name: "Motueka"
-        Subfilters:
+        Sublevels:
 <BLANKLINE>
-    Filters: ['/C|Whisky']
+    Filter: ['/G|Whisky']
     Subfolder Name: "Whisky Bottles"
-    Subfilters:
-      Filters: ['highland', 'islay']
+    Sublevels:
+      Filter: ['highland', 'islay']
       Subfolder Name: "Scotch Bottles"
-      Subfilters:
-        Filters: ['islay']
+      Sublevels:
+        Filter: ['islay']
         Subfolder Name: "Islay"
-        Subfilters:
-      Filters: ['bourbon']
+        Sublevels:
+      Filter: ['bourbon']
       Subfolder Name: "Bourbon Bottles"
-      Subfilters:
+      Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|nocat']
+    Filter: ['/G|nogroup']
     Format String: empty
     --
-    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Filter: ['/G|American Styles', '/G|Belgian Styles']
     Format String: Beer Bottle/ITER| /#|/EITER|
     --
   Tag Formats:
@@ -242,40 +242,40 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...   "unnamed_patterns": [
 ...     "Test[0-9]{4}\\.txt"
 ...   ],
-...   "renaming_schema": [
+...   "renaming_schemas": [
 ...     {
-...       "filters": [
-...         "/C|nocat"
+...       "filter": [
+...         "/G|nogroup"
 ...       ],
 ...       "format_string": "empty"
 ...     }
 ...   ],
 ...   "movement_schema": [
 ...     {
-...       "filters": [
-...         "/C|Beer"
+...       "filter": [
+...         "/G|Beer"
 ...       ],
 ...       "subfolder": "Beer Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
-...             "/C|Belgian Styles"
+...           "filter": [
+...             "/G|Belgian Styles"
 ...           ],
 ...           "subfolder": "",
-...           "subfilters": []
+...           "sublevels": []
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "dipa"
 ...           ],
 ...           "subfolder": "DIPAs",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "motueka"
 ...               ],
 ...               "subfolder": "Motueka",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         }
@@ -286,22 +286,22 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Beer']
+  Movement Schema:
+    Filter: ['/G|Beer']
     Subfolder Name: "Beer Bottles"
-    Subfilters:
-      Filters: ['/C|Belgian Styles']
+    Sublevels:
+      Filter: ['/G|Belgian Styles']
       Subfolder Name: ""
-      Subfilters:
-      Filters: ['dipa']
+      Sublevels:
+      Filter: ['dipa']
       Subfolder Name: "DIPAs"
-      Subfilters:
-        Filters: ['motueka']
+      Sublevels:
+        Filter: ['motueka']
         Subfolder Name: "Motueka"
-        Subfilters:
+        Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|nocat']
+    Filter: ['/G|nogroup']
     Format String: empty
     --
   Tag Formats:
@@ -324,44 +324,44 @@ True
 ...   "unnamed_patterns": [
 ...     "also this\\.txt"
 ...   ],
-...   "renaming_schema": [
+...   "renaming_schemas": [
 ...     {
-...       "filters": [
-...         "/C|American Styles",
-...         "/C|Belgian Styles"
+...       "filter": [
+...         "/G|American Styles",
+...         "/G|Belgian Styles"
 ...       ],
 ...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
 ...     }
 ...   ],
 ...   "movement_schema": [
 ...     {
-...       "filters": [
-...         "/C|Whisky"
+...       "filter": [
+...         "/G|Whisky"
 ...       ],
 ...       "subfolder": "Whisky Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "highland",
 ...             "islay"
 ...           ],
 ...           "subfolder": "Scotch Bottles",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "islay"
 ...               ],
 ...               "subfolder": "Islay",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "bourbon"
 ...           ],
 ...           "subfolder": "Bourbon Bottles",
-...           "subfilters": []
+...           "sublevels": []
 ...         }
 ...       ]
 ...     }
@@ -370,22 +370,22 @@ True
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Whisky']
+  Movement Schema:
+    Filter: ['/G|Whisky']
     Subfolder Name: "Whisky Bottles"
-    Subfilters:
-      Filters: ['highland', 'islay']
+    Sublevels:
+      Filter: ['highland', 'islay']
       Subfolder Name: "Scotch Bottles"
-      Subfilters:
-        Filters: ['islay']
+      Sublevels:
+        Filter: ['islay']
         Subfolder Name: "Islay"
-        Subfilters:
-      Filters: ['bourbon']
+        Sublevels:
+      Filter: ['bourbon']
       Subfolder Name: "Bourbon Bottles"
-      Subfilters:
+      Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Filter: ['/G|American Styles', '/G|Belgian Styles']
     Format String: Beer Bottle/ITER| /#|/EITER|
     --
   Tag Formats:
@@ -412,40 +412,40 @@ True
 ...   "unnamed_patterns": [
 ...     "Test[0-9]{4}\\.txt"
 ...   ],
-...   "renaming_schema": [
+...   "renaming_schemas": [
 ...     {
-...       "filters": [
-...         "/C|nocat"
+...       "filter": [
+...         "/G|nogroup"
 ...       ],
 ...       "format_string": "empty"
 ...     }
 ...   ],
 ...   "movement_schema": [
 ...     {
-...       "filters": [
-...         "/C|Beer"
+...       "filter": [
+...         "/G|Beer"
 ...       ],
 ...       "subfolder": "Beer Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
-...             "/C|Belgian Styles"
+...           "filter": [
+...             "/G|Belgian Styles"
 ...           ],
 ...           "subfolder": "",
-...           "subfilters": []
+...           "sublevels": []
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "dipa"
 ...           ],
 ...           "subfolder": "DIPAs",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "motueka"
 ...               ],
 ...               "subfolder": "Motueka",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         }
@@ -456,22 +456,22 @@ True
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Beer']
+  Movement Schema:
+    Filter: ['/G|Beer']
     Subfolder Name: "Beer Bottles"
-    Subfilters:
-      Filters: ['/C|Belgian Styles']
+    Sublevels:
+      Filter: ['/G|Belgian Styles']
       Subfolder Name: ""
-      Subfilters:
-      Filters: ['dipa']
+      Sublevels:
+      Filter: ['dipa']
       Subfolder Name: "DIPAs"
-      Subfilters:
-        Filters: ['motueka']
+      Sublevels:
+        Filter: ['motueka']
         Subfolder Name: "Motueka"
-        Subfilters:
+        Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|nocat']
+    Filter: ['/G|nogroup']
     Format String: empty
     --
   Tag Formats:
@@ -494,44 +494,44 @@ True
 ...   "unnamed_patterns": [
 ...     "also this\\.txt"
 ...   ],
-...   "renaming_schema": [
+...   "renaming_schemas": [
 ...     {
-...       "filters": [
-...         "/C|American Styles",
-...         "/C|Belgian Styles"
+...       "filter": [
+...         "/G|American Styles",
+...         "/G|Belgian Styles"
 ...       ],
 ...       "format_string": "Beer Bottle/ITER| /#|/EITER|"
 ...     }
 ...   ],
 ...   "movement_schema": [
 ...     {
-...       "filters": [
-...         "/C|Whisky"
+...       "filter": [
+...         "/G|Whisky"
 ...       ],
 ...       "subfolder": "Whisky Bottles",
-...       "subfilters": [
+...       "sublevels": [
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "highland",
 ...             "islay"
 ...           ],
 ...           "subfolder": "Scotch Bottles",
-...           "subfilters": [
+...           "sublevels": [
 ...             {
-...               "filters": [
+...               "filter": [
 ...                 "islay"
 ...               ],
 ...               "subfolder": "Islay",
-...               "subfilters": []
+...               "sublevels": []
 ...             }
 ...           ]
 ...         },
 ...         {
-...           "filters": [
+...           "filter": [
 ...             "bourbon"
 ...           ],
 ...           "subfolder": "Bourbon Bottles",
-...           "subfilters": []
+...           "sublevels": []
 ...         }
 ...       ]
 ...     }
@@ -540,38 +540,38 @@ True
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Beer']
+  Movement Schema:
+    Filter: ['/G|Beer']
     Subfolder Name: "Beer Bottles"
-    Subfilters:
-      Filters: ['/C|Belgian Styles']
+    Sublevels:
+      Filter: ['/G|Belgian Styles']
       Subfolder Name: ""
-      Subfilters:
-      Filters: ['dipa']
+      Sublevels:
+      Filter: ['dipa']
       Subfolder Name: "DIPAs"
-      Subfilters:
-        Filters: ['motueka']
+      Sublevels:
+        Filter: ['motueka']
         Subfolder Name: "Motueka"
-        Subfilters:
+        Sublevels:
 <BLANKLINE>
-    Filters: ['/C|Whisky']
+    Filter: ['/G|Whisky']
     Subfolder Name: "Whisky Bottles"
-    Subfilters:
-      Filters: ['highland', 'islay']
+    Sublevels:
+      Filter: ['highland', 'islay']
       Subfolder Name: "Scotch Bottles"
-      Subfilters:
-        Filters: ['islay']
+      Sublevels:
+        Filter: ['islay']
         Subfolder Name: "Islay"
-        Subfilters:
-      Filters: ['bourbon']
+        Sublevels:
+      Filter: ['bourbon']
       Subfolder Name: "Bourbon Bottles"
-      Subfilters:
+      Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|nocat']
+    Filter: ['/G|nogroup']
     Format String: empty
     --
-    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Filter: ['/G|American Styles', '/G|Belgian Styles']
     Format String: Beer Bottle/ITER| /#|/EITER|
     --
   Tag Formats:
@@ -599,7 +599,7 @@ Incorrect Cases
 ...   "schema_file_version": "0.9",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -609,7 +609,7 @@ False
 ...   "schema_file_version": 0.9,
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -619,7 +619,7 @@ False
 ...   "schema_file_version": [],
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -632,7 +632,7 @@ False
 ...   "schema_file_version": "99.9",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -657,7 +657,7 @@ False
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -670,7 +670,7 @@ False
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": []
+...   "renaming_schemas": []
 ... })
 False
 >>> test_schema.load_schema({
@@ -685,7 +685,7 @@ False
 ...   "file_type": "autotagical_schema",
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -693,7 +693,7 @@ False
 ...   "file_type": "autotagical_schema",
 ...   "schema_file_version": "1.0",
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -702,7 +702,7 @@ False
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": "string"
 ... })
 False
@@ -711,7 +711,7 @@ False
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": "string",
+...   "renaming_schemas": "string",
 ...   "movement_schema": []
 ... })
 False
@@ -720,7 +720,7 @@ False
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": "string",
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -729,7 +729,7 @@ False
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": ["string"],
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -738,7 +738,7 @@ False
 ...   "schema_file_version": "1.0",
 ...   "tag_formats": "string",
 ...   "unnamed_patterns": [" "],
-...   "renaming_schema": [],
+...   "renaming_schemas": [],
 ...   "movement_schema": []
 ... })
 False
@@ -753,26 +753,26 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 * Without append
 
 >>> test_schema = AutotagicalSchema()
->>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)","tag_split_pattern":"\\s+"}],"unnamed_patterns":["Test[0-9]{4}\\.txt"],"renaming_schema":[{"filters":["/C|nocat"],"format_string":"empty"}],"movement_schema":[{"filters":["/C|Beer"],"subfolder":"Beer Bottles","subfilters":[{"filters":["/C|Belgian Styles"],"subfolder":"","subfilters":[]},{"filters":["dipa"],"subfolder":"DIPAs","subfilters":[{"filters":["motueka"],"subfolder":"Motueka","subfilters":[]}]}]}]}')
+>>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)","tag_split_pattern":"\\s+"}],"unnamed_patterns":["Test[0-9]{4}\\.txt"],"renaming_schemas":[{"filter":["/G|nogroup"],"format_string":"empty"}],"movement_schema":[{"filter":["/G|Beer"],"subfolder":"Beer Bottles","sublevels":[{"filter":["/G|Belgian Styles"],"subfolder":"","sublevels":[]},{"filter":["dipa"],"subfolder":"DIPAs","sublevels":[{"filter":["motueka"],"subfolder":"Motueka","sublevels":[]}]}]}]}')
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Beer']
+  Movement Schema:
+    Filter: ['/G|Beer']
     Subfolder Name: "Beer Bottles"
-    Subfilters:
-      Filters: ['/C|Belgian Styles']
+    Sublevels:
+      Filter: ['/G|Belgian Styles']
       Subfolder Name: ""
-      Subfilters:
-      Filters: ['dipa']
+      Sublevels:
+      Filter: ['dipa']
       Subfolder Name: "DIPAs"
-      Subfilters:
-        Filters: ['motueka']
+      Sublevels:
+        Filter: ['motueka']
         Subfolder Name: "Motueka"
-        Subfilters:
+        Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|nocat']
+    Filter: ['/G|nogroup']
     Format String: empty
     --
   Tag Formats:
@@ -783,26 +783,26 @@ True
     Test[0-9]{4}\.txt
     --
 -----End Schema-----
->>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"<tagpattern>","tag_split_pattern":"<splitpattern>"}],"unnamed_patterns":["also this\\.txt"],"renaming_schema":[{"filters":["/C|American Styles","/C|Belgian Styles"],"format_string":"Beer Bottle/ITER| /#|/EITER|"}],"movement_schema":[{"filters":["/C|Whisky"],"subfolder":"Whisky Bottles","subfilters":[{"filters":["highland","islay"],"subfolder":"Scotch Bottles","subfilters":[{"filters":["islay"],"subfolder":"Islay","subfilters":[]}]},{"filters":["bourbon"],"subfolder":"Bourbon Bottles","subfilters":[]}]}]}')
+>>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"<tagpattern>","tag_split_pattern":"<splitpattern>"}],"unnamed_patterns":["also this\\.txt"],"renaming_schemas":[{"filter":["/G|American Styles","/G|Belgian Styles"],"format_string":"Beer Bottle/ITER| /#|/EITER|"}],"movement_schema":[{"filter":["/G|Whisky"],"subfolder":"Whisky Bottles","sublevels":[{"filter":["highland","islay"],"subfolder":"Scotch Bottles","sublevels":[{"filter":["islay"],"subfolder":"Islay","sublevels":[]}]},{"filter":["bourbon"],"subfolder":"Bourbon Bottles","sublevels":[]}]}]}')
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Whisky']
+  Movement Schema:
+    Filter: ['/G|Whisky']
     Subfolder Name: "Whisky Bottles"
-    Subfilters:
-      Filters: ['highland', 'islay']
+    Sublevels:
+      Filter: ['highland', 'islay']
       Subfolder Name: "Scotch Bottles"
-      Subfilters:
-        Filters: ['islay']
+      Sublevels:
+        Filter: ['islay']
         Subfolder Name: "Islay"
-        Subfilters:
-      Filters: ['bourbon']
+        Sublevels:
+      Filter: ['bourbon']
       Subfolder Name: "Bourbon Bottles"
-      Subfilters:
+      Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Filter: ['/G|American Styles', '/G|Belgian Styles']
     Format String: Beer Bottle/ITER| /#|/EITER|
     --
   Tag Formats:
@@ -817,26 +817,26 @@ True
 * With append
 
 >>> test_schema = AutotagicalSchema()
->>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)","tag_split_pattern":"\\s+"}],"unnamed_patterns":["Test[0-9]{4}\\.txt"],"renaming_schema":[{"filters":["/C|nocat"],"format_string":"empty"}],"movement_schema":[{"filters":["/C|Beer"],"subfolder":"Beer Bottles","subfilters":[{"filters":["/C|Belgian Styles"],"subfolder":"","subfilters":[]},{"filters":["dipa"],"subfolder":"DIPAs","subfilters":[{"filters":["motueka"],"subfolder":"Motueka","subfilters":[]}]}]}]}')
+>>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)","tag_split_pattern":"\\s+"}],"unnamed_patterns":["Test[0-9]{4}\\.txt"],"renaming_schemas":[{"filter":["/G|nogroup"],"format_string":"empty"}],"movement_schema":[{"filter":["/G|Beer"],"subfolder":"Beer Bottles","sublevels":[{"filter":["/G|Belgian Styles"],"subfolder":"","sublevels":[]},{"filter":["dipa"],"subfolder":"DIPAs","sublevels":[{"filter":["motueka"],"subfolder":"Motueka","sublevels":[]}]}]}]}')
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Beer']
+  Movement Schema:
+    Filter: ['/G|Beer']
     Subfolder Name: "Beer Bottles"
-    Subfilters:
-      Filters: ['/C|Belgian Styles']
+    Sublevels:
+      Filter: ['/G|Belgian Styles']
       Subfolder Name: ""
-      Subfilters:
-      Filters: ['dipa']
+      Sublevels:
+      Filter: ['dipa']
       Subfolder Name: "DIPAs"
-      Subfilters:
-        Filters: ['motueka']
+      Sublevels:
+        Filter: ['motueka']
         Subfolder Name: "Motueka"
-        Subfilters:
+        Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|nocat']
+    Filter: ['/G|nogroup']
     Format String: empty
     --
   Tag Formats:
@@ -847,42 +847,42 @@ True
     Test[0-9]{4}\.txt
     --
 -----End Schema-----
->>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"<tagpattern>","tag_split_pattern":"<splitpattern>"}],"unnamed_patterns":["also this\\.txt"],"renaming_schema":[{"filters":["/C|American Styles","/C|Belgian Styles"],"format_string":"Beer Bottle/ITER| /#|/EITER|"}],"movement_schema":[{"filters":["/C|Whisky"],"subfolder":"Whisky Bottles","subfilters":[{"filters":["highland","islay"],"subfolder":"Scotch Bottles","subfilters":[{"filters":["islay"],"subfolder":"Islay","subfilters":[]}]},{"filters":["bourbon"],"subfolder":"Bourbon Bottles","subfilters":[]}]}]}', True)
+>>> test_schema.load_schema_from_string(r'{"file_type":"autotagical_schema","schema_file_version":"1.0","tag_formats":[{"tag_pattern":"<tagpattern>","tag_split_pattern":"<splitpattern>"}],"unnamed_patterns":["also this\\.txt"],"renaming_schemas":[{"filter":["/G|American Styles","/G|Belgian Styles"],"format_string":"Beer Bottle/ITER| /#|/EITER|"}],"movement_schema":[{"filter":["/G|Whisky"],"subfolder":"Whisky Bottles","sublevels":[{"filter":["highland","islay"],"subfolder":"Scotch Bottles","sublevels":[{"filter":["islay"],"subfolder":"Islay","sublevels":[]}]},{"filter":["bourbon"],"subfolder":"Bourbon Bottles","sublevels":[]}]}]}', True)
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Beer']
+  Movement Schema:
+    Filter: ['/G|Beer']
     Subfolder Name: "Beer Bottles"
-    Subfilters:
-      Filters: ['/C|Belgian Styles']
+    Sublevels:
+      Filter: ['/G|Belgian Styles']
       Subfolder Name: ""
-      Subfilters:
-      Filters: ['dipa']
+      Sublevels:
+      Filter: ['dipa']
       Subfolder Name: "DIPAs"
-      Subfilters:
-        Filters: ['motueka']
+      Sublevels:
+        Filter: ['motueka']
         Subfolder Name: "Motueka"
-        Subfilters:
+        Sublevels:
 <BLANKLINE>
-    Filters: ['/C|Whisky']
+    Filter: ['/G|Whisky']
     Subfolder Name: "Whisky Bottles"
-    Subfilters:
-      Filters: ['highland', 'islay']
+    Sublevels:
+      Filter: ['highland', 'islay']
       Subfolder Name: "Scotch Bottles"
-      Subfilters:
-        Filters: ['islay']
+      Sublevels:
+        Filter: ['islay']
         Subfolder Name: "Islay"
-        Subfilters:
-      Filters: ['bourbon']
+        Sublevels:
+      Filter: ['bourbon']
       Subfolder Name: "Bourbon Bottles"
-      Subfilters:
+      Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|nocat']
+    Filter: ['/G|nogroup']
     Format String: empty
     --
-    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Filter: ['/G|American Styles', '/G|Belgian Styles']
     Format String: Beer Bottle/ITER| /#|/EITER|
     --
   Tag Formats:
@@ -912,38 +912,38 @@ Normal Usage
 True
 >>> print(test_schema)
 -----Schema-----
-  Movement Schemas:
-    Filters: ['/C|Beer']
+  Movement Schema:
+    Filter: ['/G|Beer']
     Subfolder Name: "Beer Bottles"
-    Subfilters:
-      Filters: ['/C|Belgian Styles']
+    Sublevels:
+      Filter: ['/G|Belgian Styles']
       Subfolder Name: ""
-      Subfilters:
-      Filters: ['dipa']
+      Sublevels:
+      Filter: ['dipa']
       Subfolder Name: "DIPAs"
-      Subfilters:
-        Filters: ['motueka']
+      Sublevels:
+        Filter: ['motueka']
         Subfolder Name: "Motueka"
-        Subfilters:
+        Sublevels:
 <BLANKLINE>
-    Filters: ['/C|Whisky']
+    Filter: ['/G|Whisky']
     Subfolder Name: "Whisky Bottles"
-    Subfilters:
-      Filters: ['highland', 'islay']
+    Sublevels:
+      Filter: ['highland', 'islay']
       Subfolder Name: "Scotch Bottles"
-      Subfilters:
-        Filters: ['islay']
+      Sublevels:
+        Filter: ['islay']
         Subfolder Name: "Islay"
-        Subfilters:
-      Filters: ['bourbon']
+        Sublevels:
+      Filter: ['bourbon']
       Subfolder Name: "Bourbon Bottles"
-      Subfilters:
+      Sublevels:
 <BLANKLINE>
   Renaming Schemas:
-    Filters: ['/C|nocat']
+    Filter: ['/G|nogroup']
     Format String: empty
     --
-    Filters: ['/C|American Styles', '/C|Belgian Styles']
+    Filter: ['/G|American Styles', '/G|Belgian Styles']
     Format String: Beer Bottle/ITER| /#|/EITER|
     --
   Tag Formats:

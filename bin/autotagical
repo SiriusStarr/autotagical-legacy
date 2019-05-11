@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
-'''
+"""
 ===========
 autotagical
 ===========
 
 This is *autotagical*.
 
-It reads in tagged files from one of more input directories then renames and/or moves them to an
-output folder hierarchy according to rules specified in user-provided schemas.  It is intended for
-use in concert with file tagging software, e.g. TagSpaces.
+It reads in tagged files from one of more input directories then renames and/or
+moves them to an output folder hierarchy according to rules specified in
+user-provided schemas.  It is intended for use in concert with file tagging
+software, e.g. TagSpaces.
 
 -----
 Usage
 -----
 autotagical [-h] [-V] [-C <config file>] [-H] [-i <input path>]
             [-I <ignore file>] [-R] [-o <output path>] [-O]
-            [-c <category file>] [-s <schema file>] [-A] [-F] [-k] [-m]
+            [-g <tag group file>] [-s <schema file>] [-A] [-F] [-k] [-m]
             [-M] [-n] [-N] [-t] [--debug] [-l <log file>] [-L] [-P]
             [-q] [-v] [--force] [--yes]
-'''
+"""
 
 import sys
 import logging
@@ -31,8 +32,8 @@ from autotagical.naming import AutotagicalNamer
 # pylint: disable=invalid-name
 if __name__ == '__main__':
     if sys.version_info[0] < 3:
-        raise Exception('Python 3 is required.  If it is installed, try rerunning with:\n' \
-                        'python3 autotagical')
+        raise Exception('Python 3 is required.  If it is installed, try '
+                        'rerunning with:\npython3 autotagical')
 
     # Load in settings for run
     SETTINGS = AutotagicalSettings()
@@ -40,7 +41,7 @@ if __name__ == '__main__':
     # Print welcome message
     logging.info('autotagical v%s', version)
     if SETTINGS.trial_run:
-        logging.info('TRIAL MODE.  Reported changes will not actually be made.')
+        logging.warning('TRIAL MODE.  Reported changes not actually made.')
 
     # Create file handler
     FILEHANDLER = AutotagicalFileHandler(SETTINGS.schema.tag_formats)
@@ -51,25 +52,26 @@ if __name__ == '__main__':
         if not FILEHANDLER.load_ignore_file(ignore_file):
             fail_ignore = True
     if fail_ignore:
-        if not SETTINGS.get_yes_no('At least one ignore file failed to load.  Continue with run?',
-                                   False):
+        if not SETTINGS.get_yes_no('At least one ignore file failed to load.  '
+                                   'Continue with run?', False):
             sys.exit()
 
     # Load all files in input folders
     fail_input = False
     for folder in SETTINGS.input_folders:
-        if not FILEHANDLER.load_folder(folder, SETTINGS.recurse, SETTINGS.process_hidden):
+        if not FILEHANDLER.load_folder(folder, SETTINGS.recurse,
+                                       SETTINGS.process_hidden):
             fail_input = True
     if fail_input:
-        if not SETTINGS.get_yes_no('At least one inupt folder failed to load.  Continue with run?',
-                                   False):
+        if not SETTINGS.get_yes_no('At least one inupt folder failed to load. '
+                                   ' Continue with run?', False):
             sys.exit()
 
     # Determine destinations first (since ITER operators require this info)
     if not SETTINGS.rename_only:
         files_out = determine_destination(FILEHANDLER.get_file_list(),
-                                          SETTINGS.schema.movement_schemas,
-                                          SETTINGS.categories)
+                                          SETTINGS.schema.movement_schema,
+                                          SETTINGS.tag_groups)
     else:
         files_out = FILEHANDLER.get_file_list()
 
@@ -77,7 +79,8 @@ if __name__ == '__main__':
     if not SETTINGS.move_only:
         NAMER = AutotagicalNamer(SETTINGS.schema.renaming_schemas,
                                  SETTINGS.schema.unnamed_patterns)
-        files_out = NAMER.determine_names(files_out, SETTINGS.categories, SETTINGS.force_name,
+        files_out = NAMER.determine_names(files_out, SETTINGS.tag_groups,
+                                          SETTINGS.force_name,
                                           SETTINGS.force_name_fail_bad)
 
     # Actually move files

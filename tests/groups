@@ -1,6 +1,6 @@
-================================
-autotagical.categories
-================================
+==================
+autotagical.groups
+==================
 
 Setup
 =====
@@ -18,30 +18,30 @@ Imports
 
 >>> import os
 >>> import sys
->>> from autotagical.categories import AutotagicalCategories
+>>> from autotagical.groups import AutotagicalGroups
 
-AutotagicalCategories.__init__()
+AutotagicalGroups.__init__()
 ================================
 
-Constructor, initializes category dictionary and loads validation schemas.
+Constructor, initializes tag group dictionary and loads validation schemas.
 
 As the constructor loads JSON schema files, it needs to be tested.  This incidentally is a test of the validation schema files packaged with *autotagical*.  This should not throw any exceptions.
 
->>> test_categories = AutotagicalCategories()
+>>> test_groups = AutotagicalGroups()
 
-AutotagicalCategories.get_category_tags(category)
+AutotagicalGroups.get_tags_in_group(tag_group)
 =================================================
 
-Returns all tags in a specified category.
+Returns all tags in a specified tag group.
 
 Base Case
 ---------
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_autotagical_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -80,20 +80,20 @@ Base Case
 ...     ]
 ...   })
 True
->>> sorted(test_categories.get_category_tags('Belgian Styles'))
+>>> sorted(test_groups.get_tags_in_group('Belgian Styles'))
 ['dubbel', 'tripel', 'witbier']
 
 Wrong Cases
 -----------
 
-* Accessing non-existent category (prints *logging.warning()* but doesn't fail).
+* Accessing non-existent tag group (prints *logging.warning()* but doesn't fail).
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_autotagical_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -132,39 +132,39 @@ Wrong Cases
 ...     ]
 ...   })
 True
->>> test_categories.get_category_tags('Sours')
+>>> test_groups.get_tags_in_group('Sours')
 set()
 
-AutotagicalCategories.load_autotagical_format(json_input, append=False)
+AutotagicalGroups.load_autotagical_format(json_input, append=False)
 =======================================================================
 
-Loads categories from JSON data in the *autotagical* format.  This does not validate the data, as this should be handled upstream.
+Loads tag groups from JSON data in the *autotagical* format.  This does not validate the data, as this should be handled upstream.
 
 Base Cases
 ----------
 
-* Empty categories.
+* Empty tag groups.
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_autotagical_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": []
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": []
 ...   })
 True
->>> print(test_categories)
------Categories----
------End Categories-----
+>>> print(test_groups)
+-----Tag Groups----
+-----End Tag Groups-----
 
 * Correct File
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_autotagical_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -203,13 +203,13 @@ True
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
   Belgian Styles: ['dubbel', 'tripel', 'witbier']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 Appending
 ---------
@@ -218,12 +218,12 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 
 * Without append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_autotagical_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -235,15 +235,15 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_autotagical_format(
+-----End Tag Groups-----
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "Whisky",
 ...         "tags": [
@@ -259,20 +259,20 @@ True
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['american_light_lager']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 * With append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_autotagical_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -284,15 +284,15 @@ True
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_autotagical_format(
+-----End Tag Groups-----
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "Whisky",
 ...         "tags": [
@@ -308,63 +308,63 @@ True
 ...     ]
 ...   }, True)
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['american_light_lager', 'dipa', 'ipa', 'pale_ale']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 Incorrect Cases
 ---------------
 
 * Nonsense versions
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_autotagical_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "0.9",
-...     "categories": []
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "0.9",
+...     "tag_groups": []
 ...   })
 False
->>> test_categories.load_autotagical_format(
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": 0.9,
-...     "categories": []
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": 0.9,
+...     "tag_groups": []
 ...   })
 False
->>> test_categories.load_autotagical_format(
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": [],
-...     "categories": []
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": [],
+...     "tag_groups": []
 ...   })
 False
 
 * Out of date *autotagical* (i.e. trying to load a file produced by a newer version).
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_autotagical_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "99.9",
-...     "categories": []
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "99.9",
+...     "tag_groups": []
 ...   })
 False
 
-AutotagicalCategories.load_tagspaces_format(json_input, append=False)
+AutotagicalGroups.load_tagspaces_format(json_input, append=False)
 =======================================================================
 
-Loads categories from JSON data in the *TagSpaces* format.  This does not validate the data, as this should be handled upstream.
+Loads tag groups from JSON data in the *TagSpaces* format.  This does not validate the data, as this should be handled upstream.
 
 Base Cases
 ----------
 
-* Empty categories.
+* Empty tag groups.
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_tagspaces_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -372,14 +372,14 @@ Base Cases
 ...     "tagGroups": []
 ...   })
 True
->>> print(test_categories)
------Categories----
------End Categories-----
+>>> print(test_groups)
+-----Tag Groups----
+-----End Tag Groups-----
 
 * Correct File
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_tagspaces_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -619,13 +619,13 @@ True
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
   Belgian Styles: ['dubbel', 'tripel', 'witbier']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 Appending
 ---------
@@ -634,8 +634,8 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 
 * Without append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_tagspaces_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -658,11 +658,11 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...   ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_tagspaces_format(
+-----End Tag Groups-----
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -685,15 +685,15 @@ True
 ...   ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 * With append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_tagspaces_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -716,11 +716,11 @@ True
 ...   ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_tagspaces_format(
+-----End Tag Groups-----
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -743,19 +743,19 @@ True
 ...   ]
 ...   }, True)
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 Incorrect Cases
 ---------------
 
 * Out of date app version (i.e. trying to load a file produced by a newer version).  These should warn but not automatically fail, since we have no way of knowing if it's actually out of date.
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_tagspaces_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "9.9.9",
@@ -766,8 +766,8 @@ True
 
 * Out of date settings version
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_tagspaces_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -781,8 +781,8 @@ Bad Case
 
 Error-handling for key errors ensures it will actually fail if an updated format changes things.
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_tagspaces_format(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tagspaces_format(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -791,10 +791,10 @@ Error-handling for key errors ensures it will actually fail if an updated format
 ...   })
 False
 
-AutotagicalCategories.load_categories(json_input, append=False)
+AutotagicalGroups.load_tag_groups(json_input, append=False)
 ===============================================================
 
-Loads categories from JSON data.  This validates against known schemas to ensure the data structure is correct.
+Loads tag groups from JSON data.  This validates against known schemas to ensure the data structure is correct.
 
 Appending
 ---------
@@ -803,12 +803,12 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 
 * Without append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -820,15 +820,15 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_categories(
+-----End Tag Groups-----
+>>> test_groups.load_tag_groups(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "Whisky",
 ...         "tags": [
@@ -840,19 +840,19 @@ True
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 * With append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
 ...         "tags": [
@@ -864,15 +864,15 @@ True
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_categories(
+-----End Tag Groups-----
+>>> test_groups.load_tag_groups(
 ...   {
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories": [
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups": [
 ...       {
 ...         "name": "Whisky",
 ...         "tags": [
@@ -884,21 +884,21 @@ True
 ...     ]
 ...   }, True)
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 Incorrect Cases
 ---------------
 
-Multiply defined categories should work (but warn using *logging.warning*).
+Multiply defined tag groups should work (but warn using *logging.warning*).
 
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories" : [
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups" : [
 ...       {
 ...         "name" : "American Styles",
 ...         "tags" : ["dipa", "ipa", "pale_ale"]
@@ -909,32 +909,32 @@ Multiply defined categories should work (but warn using *logging.warning*).
 ...       }]
 ...     })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['american_light_lager', 'dipa', 'ipa', 'pale_ale']
------End Categories-----
+-----End Tag Groups-----
 
 Bad Cases
 ---------
 
 * Wrong top level structure
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(dict())
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(dict())
 False
->>> test_categories.load_categories('String')
+>>> test_groups.load_tag_groups('String')
 False
->>> test_categories.load_categories(235)
+>>> test_groups.load_tag_groups(235)
 False
->>> test_categories.load_categories(['string', 3])
+>>> test_groups.load_tag_groups(['string', 3])
 False
 
 * Wrong file type
 
->>> test_categories.load_categories({
+>>> test_groups.load_tag_groups({
 ...     "file_type": "wrong",
-...     "category_file_version": "1.0",
-...     "categories" : [
+...     "tag_group_file_version": "1.0",
+...     "tag_groups" : [
 ...       {
 ...         "name" : "American Styles",
 ...         "tags" : ["dipa", "ipa", "pale_ale"]
@@ -944,10 +944,10 @@ False
 
 * Bad versions
 
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "0.9",
-...     "categories" : [
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "0.9",
+...     "tag_groups" : [
 ...       {
 ...         "name" : "American Styles",
 ...         "tags" : ["dipa", "ipa", "pale_ale"]
@@ -955,10 +955,10 @@ False
 ...     })
 False
 
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "99.9",
-...     "categories" : [
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "99.9",
+...     "tag_groups" : [
 ...       {
 ...         "name" : "American Styles",
 ...         "tags" : ["dipa", "ipa", "pale_ale"]
@@ -966,51 +966,51 @@ False
 ...     })
 False
 
-* Missing/wrong categories
+* Missing/wrong tag groups
 
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories" : "string"
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups" : "string"
 ...     })
 False
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories" : []
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups" : []
 ...     })
 False
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories" : [
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups" : [
 ...       {
 ...         "wrong_key" : "is wrong",
 ...       }]
 ...     })
 False
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories" : [
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups" : [
 ...       {
 ...         "name" : "American Styles",
 ...       }]
 ...     })
 False
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories" : [
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups" : [
 ...       {
 ...         "tags" : ["dipa", "ipa", "pale_ale"]
 ...       }]
 ...     })
 False
->>> test_categories.load_categories({
-...     "file_type": "autotagical_tag_categories",
-...     "category_file_version": "1.0",
-...     "categories" : [
+>>> test_groups.load_tag_groups({
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.0",
+...     "tag_groups" : [
 ...       {
 ...         "name" : "American Styles",
 ...         "tags" : [1, 2]
@@ -1021,10 +1021,10 @@ False
 TagSpaces Format
 ----------------
 
-* Empty categories.
+* Empty tag groups.
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -1035,8 +1035,8 @@ False
 
 * Correct File
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -1276,13 +1276,13 @@ False
 ...     ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
   Belgian Styles: ['dubbel', 'tripel', 'witbier']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 Appending
 ---------
@@ -1291,8 +1291,8 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 
 * Without append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -1315,11 +1315,11 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...   ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_categories(
+-----End Tag Groups-----
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -1342,15 +1342,15 @@ True
 ...   ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 * With append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -1373,12 +1373,12 @@ True
 ...   ]
 ...   })
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
+-----End Tag Groups-----
 
->>> test_categories.load_categories(
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -1401,19 +1401,19 @@ True
 ...   ]
 ...   }, True)
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 Incorrect Cases
 ---------------
 
 * Out of date app version (i.e. trying to load a file produced by a newer version).  These should warn but not automatically fail, since we have no way of knowing if it's actually out of date.
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "9.9.9",
@@ -1439,8 +1439,8 @@ True
 
 * Out of date settings version
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -1466,8 +1466,8 @@ True
 
 * Error-handling for key errors ensures it will actually fail if an updated format changes things.
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories(
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups(
 ...   {
 ...     "appName": "TagSpaces",
 ...     "appVersion": "3.1.4",
@@ -1476,89 +1476,89 @@ True
 ...   })
 False
 
-AutotagicalCategories.load_categories_from_string(json_string, append=False)
+AutotagicalGroups.load_tag_groups_from_string(json_string, append=False)
 ============================================================================
 
-Loads categories from JSON data in a string.  This validates against known schemas to ensure the data structure is correct.  This function is not used at this time and will not be extensively tested (since it largely depends on well-tested functions under it).
+Loads tag groups from JSON data in a string.  This validates against known schemas to ensure the data structure is correct.  This function is not used at this time and will not be extensively tested (since it largely depends on well-tested functions under it).
 
 * Without append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_string('{"file_type":"autotagical_tag_categories","category_file_version":"1.0","categories":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.0","tag_groups":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_categories_from_string('{"file_type":"autotagical_tag_categories","category_file_version":"1.0","categories":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}')
+-----End Tag Groups-----
+>>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.0","tag_groups":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}')
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 * With append
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_string('{"file_type":"autotagical_tag_categories","category_file_version":"1.0","categories":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.0","tag_groups":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
------End Categories-----
->>> test_categories.load_categories_from_string('{"file_type":"autotagical_tag_categories","category_file_version":"1.0","categories":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}', True)
+-----End Tag Groups-----
+>>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.0","tag_groups":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}', True)
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
-AutotagicalCategories.load_categories_from_file(file_path, append=False)
+AutotagicalGroups.load_tag_groups_from_file(file_path, append=False)
 ========================================================================
 
-Loads categories from JSON data in a file.  This validates against known schemas to ensure the data structure is correct.
+Loads tag groups from JSON data in a file.  This validates against known schemas to ensure the data structure is correct.
 
 Normal Usage
 ------------
 
 * autotagical format
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_categories.json'))
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_tag_groups.json'))
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
   Belgian Styles: ['dubbel', 'tripel', 'witbier']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 * TagSpaces format
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_tagspaces_tag_library.json'))
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_tagspaces_tag_library.json'))
 True
->>> print(test_categories)
------Categories----
+>>> print(test_groups)
+-----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
   Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
   Belgian Styles: ['dubbel', 'tripel', 'witbier']
   Whisky: ['bourbon', 'rye', 'scotch']
------End Categories-----
+-----End Tag Groups-----
 
 Bad Cases
 ---------
 
 * autotagical format
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'bad_test_categories.json'))
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'bad_test_tag_groups.json'))
 False
 
 * TagSpaces format
 
->>> test_categories = AutotagicalCategories()
->>> test_categories.load_categories_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'bad_test_categories.json'))
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_tag_groups_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'bad_test_tag_groups.json'))
 False
