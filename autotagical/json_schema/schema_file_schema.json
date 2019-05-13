@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
     "$id": "https://raw.githubusercontent.com/SiriusStarr/autotagical/stable/autotagical/json_schema/schema_file_schema.json",
-    "$comment": "SCHEMA_FILE_VERSION = 1.0",
+    "$comment": "SCHEMA_FILE_VERSION = 1.1",
     "type": "object",
     "definitions": {
         "string_array": {

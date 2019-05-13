@@ -47,15 +47,15 @@ def _init_logging(verbose, no_warn, debug, log_file=None, overwrite_log=False):
 
     Parameters
     ----------
-    verbose : bool
+    verbose: bool
         Sets log level to at least INFO if True
-    no_warn : bool
+    no_warn: bool
         Sets log level to ERROR if True and no other flags
-    debug : bool
+    debug: bool
         Sets log level to DEBUG if True
-    log_file : str (default None)
+    log_file: str (default None)
         Path to log file to output to
-    overwrite_log : bool (default False)
+    overwrite_log: bool (default False)
         Whether to overwrite or append to specified log file.
 
     Returns
@@ -151,55 +151,57 @@ class AutotagicalSettings:  # pylint: disable=R0902, R0903
 
     Class Attributes
     ----------------
-    yes_regex : Regular Expression Object
+    yes_regex: Regular Expression Object
         Matches "yes"; used to parse user input
-    no_regex : Regular Expression Object
+    no_regex: Regular Expression Object
         Matches "no"; used to parse user input
 
     Instance Attributes
     -------------------
-    all_match_root : bool
+    all_match_root: bool
         Whether to move files that did not match any movement schema, using the
         root output folder for such cases.
-    answer_yes : bool
+    answer_yes: bool
         Whether to assume "yes" for all user prompts.
-    tag_groups : AutotagicalGroups
+    tag_groups: AutotagicalGroups
         An AutotagicalGroups object, representing known tag groups.
-    clobber : bool
+    clean_folders: list of str
+        List of folders to clean (delete empty directories from) after run.
+    clobber: bool
         Whether to clobber files in the output folder (overwrite them without
         prompt).
-    copy : bool
+    copy: bool
         Whether to copy files from input folder or move them out of it.
-    force_move : bool
+    force_move: bool
         Whether to move files that could not be renamed.
-    force_name : bool
+    force_name: bool
         Whether to try to rename even files that have been manually named.
-    force_name_fail_bad : bool
+    force_name_fail_bad: bool
         Whether failing to rename a manually-named file counts as failing to
         name.
-    ignore_files : list of str
+    ignore_files: list of str
         List of paths to files containing patterns of files to ignore.
-    input_folders : list of str
+    input_folders: list of str
         List of paths to directories to parse files from.
-    move_only : bool
+    move_only: bool
         Whether to only move files, not rename them.
-    output_folders : list of str
+    output_folders: list of str
         List of paths to directories to output files to.  Files will be copied
         to each.
-    process_hidden : bool
+    process_hidden: bool
         Whether to include hidden files and directories (those begining with
         ".") in input
         folders.
-    recurse : bool
+    recurse: bool
         Whether to descend into subdirectories looking for input files.
-    rename_only : bool
+    rename_only: bool
         Whether to only rename files, not move them.
-    schema : AutotagicalSchema
+    schema: AutotagicalSchema
         A representation of loaded movement/renaming schemas.
-    silence_windows : bool
+    silence_windows: bool
         Whether to silence warnings about unsafe characters in file names for
         Windows.
-    trial_run : bool
+    trial_run: bool
         Whether to only print actions rather than execute them.
 
     Methods
@@ -232,6 +234,7 @@ class AutotagicalSettings:  # pylint: disable=R0902, R0903
         self.tag_groups = None
         self.schema = None
         self.all_match_root = True
+        self.clean_folders = []
         self.copy = True
         self.move_only = True
         self.rename_only = True
@@ -253,9 +256,9 @@ class AutotagicalSettings:  # pylint: disable=R0902, R0903
 
         Parameters
         ----------
-        msg : string
+        msg: string
             The message to prompt the user with.
-        default_to : bool
+        default_to: bool
             Whether to default to "yes" (True) of "no" (False)
 
         Returns
@@ -292,10 +295,10 @@ class AutotagicalSettings:  # pylint: disable=R0902, R0903
 
         Parameters
         ----------
-        cl_args : Namespace
+        cl_args: Namespace
             Namespace produced by arparse's parse_args() function on the
             command line.
-        file_args : Namespace
+        file_args: Namespace
             Namespace produced by arparse's parse_args() function on a config
             file.
 
@@ -382,6 +385,9 @@ class AutotagicalSettings:  # pylint: disable=R0902, R0903
         else:
             _load_files(file_args.tag_group_files,
                         self.tag_groups.load_tag_groups_from_file)
+
+        # Process groups to resolve fancy features.
+        self.tag_groups.process_groups()
         logging.debug('Tag Groups:\n%s', str(self.tag_groups))
 
         self.schema = AutotagicalSchema()
@@ -401,6 +407,22 @@ class AutotagicalSettings:  # pylint: disable=R0902, R0903
         if not cl_args.all_match_root and not file_args.all_match_root:
             self.all_match_root = False
         logging.debug('All match at root: %s', str(self.all_match_root))
+
+        # Clean input only if told to on command line or told in config file
+        # and no cleaning on command line.
+        # pylint: disable=C0330
+        if (cl_args.clean_both
+            or cl_args.clean_input_folders
+            or (not cl_args.clean_output_folders
+                and (file_args.clean_input_folders
+                     or file_args.clean_both))):
+            self.clean_folders += self.input_folders
+        if (cl_args.clean_both
+            or cl_args.clean_output_folders
+            or (not cl_args.clean_input_folders
+                and (file_args.clean_output_folders
+                     or file_args.clean_both))):
+            self.clean_folders += self.output_folders
 
         # Keep originals to false only if neither set it.
         if not cl_args.copy and not file_args.copy:
@@ -578,6 +600,22 @@ class AutotagicalSettings:  # pylint: disable=R0902, R0903
                                         'all tags, i.e. every file will be '
                                         'moved to output folder, even if it '
                                         'does not match more specifically.')
+        function_args.add_argument('--cleanin',
+                                   dest='clean_input_folders',
+                                   action='store_true',
+                                   help='Clean up (delete) all empty folders '
+                                        'in input folders (will recurse).')
+        function_args.add_argument('--cleanout',
+                                   dest='clean_output_folders',
+                                   action='store_true',
+                                   help='Clean up (delete) all empty folders '
+                                        'in output folders (will recurse).')
+        function_args.add_argument('-c', '--clean',
+                                   dest='clean_both',
+                                   action='store_true',
+                                   help='Clean up (delete) all empty folders '
+                                        'in input and output folders (will '
+                                        'recurse).')
         function_args.add_argument('-F', '--failforcerename',
                                    dest='force_name_fail_bad',
                                    action='store_true',

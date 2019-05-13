@@ -23,7 +23,7 @@ Set up a basic tag groups object.
 >>> test_groups.load_tag_groups(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -44,12 +44,8 @@ Set up a basic tag groups object.
 ...       {
 ...         "name": "Beer",
 ...         "tags": [
-...           "ipa",
-...           "dipa",
-...           "pale_ale",
-...           "witbier",
-...           "dubbel",
-...           "tripel"
+...           "/G|American Styles",
+...           "/G|Belgian Styles"
 ...         ]
 ...       },
 ...       {
@@ -63,6 +59,7 @@ Set up a basic tag groups object.
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 
 Test Schema
 -----------
@@ -72,7 +69,7 @@ Set up test schemas.
 >>> test_schema = AutotagicalSchema()
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [
 ...     {
 ...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
@@ -248,8 +245,8 @@ Test Tag Patterns
 -----------------
 
 >>> import re
->>> test_tag_patterns = [{'tag_pattern' : re.compile(pattern['tag_pattern']),
-...                       'tag_split_pattern' : re.compile(pattern['tag_split_pattern'])} for pattern in test_schema.tag_formats]
+>>> test_tag_patterns = [{'tag_pattern': re.compile(pattern['tag_pattern']),
+...                       'tag_split_pattern': re.compile(pattern['tag_split_pattern'])} for pattern in test_schema.tag_formats]
 
 Test Ignore Patterns
 --------------------

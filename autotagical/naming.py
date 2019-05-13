@@ -11,6 +11,10 @@ based on renaming schemas in autotagical.
 ---------
 Functions
 ---------
+_tig_operator_sub(tag_array, tag_groups, match_obj)
+    Takes a tag array, tag groups, and a regex match object (from a TIG
+    operator match) and returns the string to subsitute it with.  For use with
+    re.sub().
 simplify_to_conditionals(format_string)
     Takes a format string and simplifies the "convenience" operators to simply
     be conditionals.
@@ -35,9 +39,33 @@ AutotagicalNamer
 
 import logging
 import re
+import sys
 from autotagical.filtering import check_against_filter, \
                                   check_against_condition_set
 from autotagical.schema import SchemaError
+
+
+def _tig_operator_sub(tag_array, tag_groups, match_obj):
+    """
+    Takes a tag array, tag groups, and a regex match object (from a TIG
+    operator match) and returns the string to subsitute it with.  For use with
+    re.sub().
+
+    Parameters
+    ----------
+    tag_array: list of str
+        List of strings, each representing a tag on the file.
+    tag_groups: AutotagicalGroups
+        An AutotagicalGroups object representing known tag groups.
+    match_obj: Regex Match Object
+        The match being subsituted.
+
+    Returns
+    -------
+    str
+        The tag in group that matches.
+    """
+    return tag_groups.tag_in_group(tag_array, match_obj.group('group'))
 
 
 def simplify_to_conditionals(format_string):
@@ -47,7 +75,7 @@ def simplify_to_conditionals(format_string):
 
     Parameters
     ----------
-    format_string : str
+    format_string: str
         The format string may have tag /?T|, group /?G|, conditional /?|, file
         name /FILE|, tags /TAGS|, and/or extension /EXT| operators in it.  It
         may not have the /ITER| operator, as this is handled separately.
@@ -73,13 +101,13 @@ def evaluate_conditionals(format_string, tag_array, tag_groups):
 
     Parameters
     ----------
-    format_string : str
+    format_string: str
         The format string may have conditional /?|, file name /FILE|, tags
         /TAGS|, and/or extension /EXT| operators in it.  It may not have the
         /ITER| operator, as this is handled separately.
-    tag_array : list of str
+    tag_array: list of str
         A list of strings, each representing a tag on the file being evaluated.
-    tag_groups : AutotagicalGroups
+    tag_groups: AutotagicalGroups
         An AutotagicalGroups object, representing known tag groups groups.
 
     Returns
@@ -109,7 +137,7 @@ def strip_iters(format_string):
 
     Parameters
     ----------
-    format_string : str
+    format_string: str
         The format string may have the tag /?T|, group /?G|, conditional /?|,
         file name /FILE|, tags /TAGS|, extension /EXT|, and/or /ITER| operators
         in it.
@@ -137,11 +165,11 @@ def evaluate_iters(format_string, occurrence):
 
     Parameters
     ----------
-    format_string : str
+    format_string: str
         The format string may have the tag /?T|, group /?G|, conditional /?|,
         file name /FILE|, tags /TAGS|, extension /EXT|, and/or /ITER| operators
         in it.
-    occurrence : int
+    occurrence: int
         Number of times the file name has been produced (will be inserted for
         the /#| occurrence operator)
 
@@ -171,13 +199,13 @@ def substitute_operators(format_string, file, tag_groups):
 
     Parameters
     ----------
-    format_string : str
+    format_string: str
         The format string may have tag /?T|, group /?G|, conditional /?|, file
         name /FILE|, tags /TAGS|, and/or extension /EXT| operators in it.  It
         may not have the /ITER| operator, as this is handled separately.
-    file : AutotagicalFile
+    file: AutotagicalFile
         The file to be considered.
-    tag_groups : AutotagicalGroups
+    tag_groups: AutotagicalGroups
         An AutotagicalGroups object, representing known tag groups.
 
     Returns
@@ -195,6 +223,13 @@ def substitute_operators(format_string, file, tag_groups):
     to_return = evaluate_conditionals(simplify_to_conditionals(format_string),
                                       file.tag_array, tag_groups)
 
+    # Handle tag in group operator
+    # Have to use a lambda function to wrap _tig_operator_sub, since re.sub
+    # can only pass one argument.
+    to_return = AutotagicalNamer.tig_regex.sub(
+        lambda a: _tig_operator_sub(file.tag_array, tag_groups, a),
+        to_return)
+
     # Warn if no extension or no tags
     if '/TAGS|' not in to_return:
         logging.warning('Renamed a file without preserving tags!  This will '
@@ -211,10 +246,11 @@ def substitute_operators(format_string, file, tag_groups):
 
     # Check if there are any /'s left, as this is a very bad sign.
     if '/' in to_return:
-        logging.warning('A "/" is still in the format string after reducing '
-                        'all operators!  This probably means there was a '
-                        'problem with the format string!\nFormat String: ' +
-                        format_string + '\nOutput: ' + to_return)
+        logging.error('A "/" is still in the format string after reducing '
+                      'all operators!  This probably means there was a '
+                      'problem with the format string!\nFormat String: %s\n'
+                      'Output: %s', format_string, to_return)
+        sys.exit()
 
     # If the operators evaluated to a completely blank string, this is bad,
     # because can't use that
@@ -233,43 +269,43 @@ class AutotagicalNamer:
 
     Class Attributes
     ----------------
-    tag_regex : Regular Expression Object
+    tag_regex: Regular Expression Object
         Compiled regex for finding /?T| tag operators
-    group_regex : Regular Expression Objects
+    group_regex: Regular Expression Objects
         Compiled regex for finding /?G| group operators
-    conditional_regex : Regular Expression Objects
+    conditional_regex: Regular Expression Objects
         Compiled regex for finding /?| conditional operators
-    iter_regex : Regular Expression Objects
+    iter_regex: Regular Expression Objects
         Compiled regex for finding /ITER| operators
 
     Instance Attributes
     -------------------
-    __produced_names : dict
+    __produced_names: dict
         A dictionary with strings for keys and dictionaries for values,
         containing filenames that have been produced (used for iter
         operators).  It should be of the following form:
             {
-                "iterless filename" : dict
+                "iterless filename": dict
                     A dictionary representing a single file name that has been
                     produced.  It should be of the following form:
                         {
-                            'occurrences' : int,
+                            'occurrences': int,
                                 Number of times this name has been produced
-                            'first_occurrence' : str
+                            'first_occurrence': str
                                 Full path to the first file to be named this
                         }
                 ...
             }
-    __unnamed_patterns : list of Regular Expression Objects
+    __unnamed_patterns: list of Regular Expression Objects
         List of compiled regexes that define unnamed files.
-    __renaming_schemas : list of dict
+    __renaming_schemas: list of dict
         List of dictionaries, each with strings as keys.  It will be of the
         form:
             [
                 {
-                    'filter' : list of str
+                    'filter': list of str
                         ['filter1', 'filter2', ...]
-                    'format_string' : str
+                    'format_string': str
                         'renaming format string containing operators'
                 }
             ]
@@ -299,6 +335,7 @@ class AutotagicalNamer:
                                    r'/T\|(?P<true_sub>.*?)'
                                    r'/F\|(?P<false_sub>.*?)/E\?\|)')
     iter_regex = re.compile(r'(?P<full_iter>/ITER\|(?P<iter_sub>.*?)/EITER\|)')
+    tig_regex = re.compile(r'/\?TIG\|(?P<group>[^/]+?)/\|')
 
     def __init__(self, renaming_schemas, unnamed_patterns):
         """
@@ -306,9 +343,9 @@ class AutotagicalNamer:
 
         Parameters
         ----------
-        renaming_schemas : list
+        renaming_schemas: list
             List of the sort stored in AutotagicalSchema.renaming_schemas
-        unnamed_patterns : list
+        unnamed_patterns: list
             List of the sort stored in AutotagicalSchema.unnamed_patterns
 
         Returns
@@ -330,7 +367,11 @@ class AutotagicalNamer:
         # Store schema and compile regexes
         self.__renaming_schemas = renaming_schemas
         for pattern in unnamed_patterns:
-            self.__unnamed_patterns.append(re.compile(pattern))
+            try:
+                self.__unnamed_patterns.append(re.compile(pattern))
+            except re.error as err:
+                logging.warning('Regex error unnamed pattern: %s\n%s',
+                                pattern, str(err))
 
     def check_if_unnamed(self, file_name):
         """
@@ -339,7 +380,7 @@ class AutotagicalNamer:
 
         Parameters
         ----------
-        file_name : str
+        file_name: str
             The file name to check against the patterns.  This should not
             contain tags.
 
@@ -361,10 +402,10 @@ class AutotagicalNamer:
 
         Parameters
         ----------
-        tag_array : list of str
+        tag_array: list of str
             A list of strings, each representing a tag on the file.
 
-        tag_groups : AutotagicalGroups
+        tag_groups: AutotagicalGroups
             Known tag groups.
 
         Returns
@@ -388,19 +429,19 @@ class AutotagicalNamer:
 
         Parameters
         ----------
-        file_list : list of AutotagicalFile
+        file_list: list of AutotagicalFile
             A list of AutotagicalFile objects, each representing a file to be
             named.
-        tag_groups : AutotagicalGroups
+        tag_groups: AutotagicalGroups
             An AutotagicalGroups object representing known tag groups.
-        force_name : bool (False by default)
+        force_name: bool (False by default)
             Whether to try to rename files that do not match the unnamed
             pattern.
-        force_fail_bad : bool (False by default)
+        force_fail_bad: bool (False by default)
             Whether a manually named file (being named because of force_name)
             not matching any naming schema should be considered a failure to
             name the file.
-        clear_occurrences : bool (False by default)
+        clear_occurrences: bool (False by default)
             Whether to reset produced file names before the run (resetting iter
             operators).
 

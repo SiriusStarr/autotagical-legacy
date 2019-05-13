@@ -23,7 +23,7 @@ Set up a basic tag groups object.
 >>> test_groups.load_tag_groups(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -44,12 +44,8 @@ Set up a basic tag groups object.
 ...       {
 ...         "name": "Beer",
 ...         "tags": [
-...           "ipa",
-...           "dipa",
-...           "pale_ale",
-...           "witbier",
-...           "dubbel",
-...           "tripel"
+...           "/G|American Styles",
+...           "/G|Belgian Styles"
 ...         ]
 ...       },
 ...       {
@@ -63,6 +59,7 @@ Set up a basic tag groups object.
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 
 Test Schema
 -----------
@@ -72,7 +69,7 @@ Set up test schemas.
 >>> test_schema = AutotagicalSchema()
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [
 ...     {
 ...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
@@ -171,7 +168,7 @@ True
 >>> empty_schema = AutotagicalSchema()
 >>> empty_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": [],
@@ -605,6 +602,14 @@ Conditionals
 ...                                 test_file_3, test_groups)
 'This is a  group and  tag operator.'
 
+* Tag In Group operator
+
+>>> substitute_operators('This is a /?TIG|American Styles/| operator.', test_file_1, test_groups)
+'This is a dipa operator.'
+>>> substitute_operators('This is a /?TIG|American Styles/| operator.', test_file_2, test_groups)
+'This is a pale_ale operator.'
+>>> substitute_operators('This is a /?TIG|American Styles/| operator.', test_file_3, test_groups)
+'This is a  operator.'
 
 Complex Combinations
 --------------------
@@ -616,19 +621,12 @@ Complex Combinations
 'This is a Test1532 conditional operator.'
 >>> substitute_operators('This is a /?|' + complex_filter + '/T|/FILE|/F|/TAGS|/E?| conditional operator.', test_file_4, test_groups)
 'This is a [scotch laphroaig islay] conditional operator.'
-
-Bad Cases
----------
-
-* Bad operators (throws a warning but doesn't fail)
-
->>> substitute_operators('This is a string with a / messed up operator. /FILE|', test_file_1, test_groups)
-'This is a string with a / messed up operator. Test1999'
-
-* Nested conditionals (not supported)
-
->>> substitute_operators('So /?|tag/T|nested/?|tag2/T|conditionals/F|are/E?|bad/F|but/E?| do not fail./FILE|', test_file_1, test_groups)
-'So arebad/F|but/E?| do not fail.Test1999'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/?TIG|Whisky/|/F|/?TIG|American Styles/|/E?| conditional operator.', test_file_1, test_groups)
+'This is a dipa conditional operator.'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/?TIG|Whisky/|/F|/?TIG|American Styles/|/E?| conditional operator.', test_file_2, test_groups)
+'This is a  conditional operator.'
+>>> substitute_operators('This is a /?|' + complex_filter + '/T|/?TIG|American Styles/|/F|/?TIG|Whisky/|/E?| conditional operator.', test_file_4, test_groups)
+'This is a scotch conditional operator.'
 
 AutotagicalNamer(renaming_schema, unnamed_patterns)
 =================================================================

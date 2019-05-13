@@ -11,6 +11,8 @@ moving them, etc. in autotagical
 ---------
 Functions
 ---------
+clean_folder(folder_path, trial_run=False):
+    Removes all empty directories/subdirectories from the specified folder.
 check_windows_compat(name, full_path)
     Checks a file name and path for Windows-unsafe characters.
 check_output_location(settings)
@@ -39,15 +41,51 @@ import sys
 import logging
 
 
+def clean_folder(folder_path, trial_run=False):
+    """
+    Removes all empty directories/subdirectories from the specified folder.
+
+    Parameters
+    ----------
+    folder_path: str
+        Path to folder to clean.
+    trial_run: bool
+        If True, do not actually delete folders, only log that they will be.
+
+    Returns
+    -------
+    bool
+        True if successful, False if errors were encountered.
+    """
+    successful = True
+    for root, dirs, _ in os.walk(top=folder_path, topdown=False):
+        for directory in dirs:
+            full_path = os.path.join(root, directory)
+            try:
+                if not os.listdir(full_path):
+                    logging.info('Cleaning (deleting) folder at %s',
+                                 full_path)
+                    if not trial_run:
+                        os.rmdir(full_path)
+                else:
+                    logging.info('Skipping cleaning non-empty directory at: '
+                                 '%s', full_path)
+            except OSError as err:
+                logging.warning('Could not clean directory at %s:\n%s',
+                                full_path, str(err))
+                successful = False
+    return successful
+
+
 def check_windows_compat(name, full_path):
     """
     Checks a file name and path for Windows-unsafe characters.
 
     Parameters
     ----------
-    name : str
+    name: str
         Name of file (no directories).
-    full_path : str
+    full_path: str
         Full path of the file
 
     Returns
@@ -192,10 +230,10 @@ def move_files(move_list, settings):
 
     Parameters
     ----------
-    move_list : list of AutotagicalFile
+    move_list: list of AutotagicalFile
         A list of AutotagicalFile objects, each representing a file to be
         moved/renamed.
-    settings : AutotagicalSettings
+    settings: AutotagicalSettings
         An AutotagicalSettings object holding the settings for the movement.
 
     Returns
@@ -252,25 +290,25 @@ class AutotagicalFile:  # pylint: disable=R0902
 
     Attributes
     ----------
-    dest_folder : str
+    dest_folder: str
         The folder the file is to be moved to.
-    extension : str
+    extension: str
         The extension of the original file.
-    move_failed : bool
+    move_failed: bool
         True is no applicable movement schema was found, False otherwise.
-    name : str
+    name: str
         Original file name, less tags and extension.
-    original_path : str
+    original_path: str
         Complete path to original file, including directories and file name.
-    output_name : str
+    output_name: str
         The file name the file is to be renamed to.
-    raw_name : str
+    raw_name: str
         The original file name with tags and extension.
-    rename_failed : bool
+    rename_failed: bool
         True if no applicable renaming schema was found, False otherwise.
-    tags : str
+    tags: str
         Complete tags on the original file, including any delimiters.
-    tag_array : list of str
+    tag_array: list of str
         List of strings, each a tag on the original file.
 
     Class Methods
@@ -297,17 +335,17 @@ class AutotagicalFile:  # pylint: disable=R0902
 
         Parameters
         ----------
-        name : str
+        name: str
             Original file name, less tags and extension.
-        tags : str
+        tags: str
             Complete tags on the original file, including any delimiters.
-        extension : str
+        extension: str
             The extension of the original file.
-        tag_array : list of str
+        tag_array: list of str
             List of strings, each a tag on the original file.
-        raw_name : str
+        raw_name: str
             The original file name with tags and extension.
-        original_path : str
+        original_path: str
             Complete path to original file, including all directories and file
             name.
         """
@@ -351,17 +389,17 @@ class AutotagicalFile:  # pylint: disable=R0902
 
         Parameters
         ----------
-        name : str
+        name: str
             The full name of the file to load.
-        path : str
+        path: str
             Complete path to original file, including directories and file name
-        tag_patterns : list of dict
+        tag_patterns: list of dict
             List of dictionaries, each of the following form:
                 {
-                    'tag_pattern' : Regular Expression Object,
-                    'tag_split_pattern' : Regular Expression Object
+                    'tag_pattern': Regular Expression Object,
+                    'tag_split_pattern': Regular Expression Object
                 }
-        ignore_patterns : list of Regular Expression Objects
+        ignore_patterns: list of Regular Expression Objects
             A list of compiled regexes full-matching file patterns to ignore.
 
         Returns
@@ -404,14 +442,14 @@ class AutotagicalFileHandler:
 
     Instance Attributes
     -------------------
-    __file_list : list of AutotagicalFile
-    __ignore_patterns : list of Regular Expression Objects
+    __file_list: list of AutotagicalFile
+    __ignore_patterns: list of Regular Expression Objects
         A list of compiled regexes full-matching file patterns to ignore.
-    __tag_patterns : list of dict
+    __tag_patterns: list of dict
         List of dictionaries, each of the following form:
             {
-                'tag_pattern' : Regular Expression Object,
-                'tag_split_pattern' : Regular Expression Object
+                'tag_pattern': Regular Expression Object,
+                'tag_split_pattern': Regular Expression Object
             }
 
     Methods
@@ -446,10 +484,18 @@ class AutotagicalFileHandler:
         """
         self.__file_list = []
         self.__ignore_patterns = []
-        self.__tag_patterns = [{
-            'tag_pattern': re.compile(pattern['tag_pattern']),
-            'tag_split_pattern': re.compile(pattern['tag_split_pattern'])
-            } for pattern in tag_formats]
+        self.__tag_patterns = []
+        # Try to compile tag patterns as a regex or warn
+        for pattern in tag_formats:
+            try:
+                self.__tag_patterns.append({
+                    'tag_pattern': re.compile(pattern['tag_pattern']),
+                    'tag_split_pattern':
+                        re.compile(pattern['tag_split_pattern'])
+                })
+            except re.error as err:
+                logging.warning('Regex error in tag format:  %s\n%s',
+                                pattern, str(err))
 
     def load_ignore_file(self, path):
         """
@@ -458,7 +504,7 @@ class AutotagicalFileHandler:
 
         Parameters
         ----------
-        path : str
+        path: str
             The complete path to the file, including folders and the complete
             file name.
 
@@ -496,9 +542,9 @@ class AutotagicalFileHandler:
 
         Parameters
         ----------
-        name : str
+        name: str
             The full name of the file.
-        path : str
+        path: str
             The path to the file (including file name)
 
         Returns
@@ -522,9 +568,9 @@ class AutotagicalFileHandler:
 
         Parameters
         ----------
-        name : str
+        name: str
             The full name of the file.
-        path : str
+        path: str
             The path to the file (including file name)
 
         Returns
@@ -549,11 +595,11 @@ class AutotagicalFileHandler:
 
         Parameters
         ----------
-        input_folder : str
+        input_folder: str
             Path to folder to load files from.
-        recurse : bool
+        recurse: bool
             If True, will descend into subfolders recursively.
-        process_hidden : bool
+        process_hidden: bool
             If True, will process files beginning with '.' and (if recurse is
             True) descend into directories beginning with '.'
 

@@ -29,10 +29,10 @@ As the constructor loads JSON schema files, it needs to be tested.  This inciden
 
 >>> test_groups = AutotagicalGroups()
 
-AutotagicalGroups.get_tags_in_group(tag_group)
-=================================================
+AutotagicalGroups.tag_in_group(self, tag_array, group)
+======================================================
 
-Returns all tags in a specified tag group.
+Determines if a tag array matches the specified group and returns the first matching tag.
 
 Base Case
 ---------
@@ -40,7 +40,7 @@ Base Case
 >>> test_groups.load_autotagical_format(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -61,12 +61,8 @@ Base Case
 ...       {
 ...         "name": "Beer",
 ...         "tags": [
-...           "ipa",
-...           "dipa",
-...           "pale_ale",
-...           "witbier",
-...           "dubbel",
-...           "tripel"
+...           "/G|American Styles",
+...           "/G|Belgian Styles"
 ...         ]
 ...       },
 ...       {
@@ -80,8 +76,17 @@ Base Case
 ...     ]
 ...   })
 True
->>> sorted(test_groups.get_tags_in_group('Belgian Styles'))
-['dubbel', 'tripel', 'witbier']
+>>> test_groups.process_groups()
+>>> test_groups.tag_in_group(['tripel'], 'Belgian Styles')
+'tripel'
+>>> test_groups.tag_in_group(['dipa', 'tripel'], 'Belgian Styles')
+'tripel'
+>>> test_groups.tag_in_group(['dipa', 'witbier', 'tripel'], 'Belgian Styles')
+'witbier'
+>>> test_groups.tag_in_group(['dipa', 'tripel', 'witbier'], 'Belgian Styles')
+'tripel'
+>>> test_groups.tag_in_group(['dipa', 'ctz'], 'Belgian Styles')
+''
 
 Wrong Cases
 -----------
@@ -92,7 +97,7 @@ Wrong Cases
 >>> test_groups.load_autotagical_format(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -113,9 +118,63 @@ Wrong Cases
 ...       {
 ...         "name": "Beer",
 ...         "tags": [
-...           "ipa",
-...           "dipa",
-...           "pale_ale",
+...           "/G|American Styles",
+...           "/G|Belgian Styles"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> test_groups.tag_in_group(['dipa'], 'Sours')
+''
+>>> test_groups.tag_in_group([], 'Whisky')
+''
+>>> test_groups.tag_in_group([], 'Sours')
+''
+
+Regex Groups
+------------
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "Account Number",
+...         "tags": [
+...           "/RE|(?:xx)[0-9]{4}",
+...           "/RE|(?:\\*\\*)[0-9]{4}",
+...           "acct",
+...           "acct2"
+...         ]
+...       },
+...       {
+...         "name": "More Accounts",
+...         "tags": [
+...           "/G|Account Number",
+...           "acct3"
+...         ]
+...       },
+...       {
+...         "name": "Even More Accounts",
+...         "tags": [
+...           "/G|More Accounts",
+...           "acct4"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
 ...           "witbier",
 ...           "dubbel",
 ...           "tripel"
@@ -132,8 +191,31 @@ Wrong Cases
 ...     ]
 ...   })
 True
->>> test_groups.get_tags_in_group('Sours')
-set()
+>>> test_groups.process_groups()
+>>> test_groups.tag_in_group([], 'Whisky')
+''
+>>> test_groups.tag_in_group(['whisk', 'rye', 'scotch'], 'Whisky')
+'rye'
+>>> test_groups.tag_in_group(['whisk', 'rye', 'scotch'], 'Account Number')
+''
+>>> test_groups.tag_in_group(['whisk', 'xx0117', 'scotch'], 'Account Number')
+'xx0117'
+>>> test_groups.tag_in_group(['whisk', 'xx0117', '**5324'], 'Account Number')
+'xx0117'
+>>> test_groups.tag_in_group(['whisk', '**5324', 'xx0117'], 'Account Number')
+'**5324'
+>>> test_groups.tag_in_group(['whisk', 'xx0117', 'scotch'], 'Even More Accounts')
+'xx0117'
+>>> test_groups.tag_in_group(['whisk', 'xx0117', '**5324'], 'Even More Accounts')
+'xx0117'
+>>> test_groups.tag_in_group(['whisk', '**5324', 'xx0117'], 'Even More Accounts')
+'**5324'
+>>> test_groups.tag_in_group(['whisk', 'acct3', '**5324', 'xx0117'], 'Even More Accounts')
+'acct3'
+>>> test_groups.tag_in_group(['whisk', '**5324', 'acct3', 'xx0117'], 'Even More Accounts')
+'**5324'
+>>> test_groups.tag_in_group(['whisk', 'acct3'], 'Even More Accounts')
+'acct3'
 
 AutotagicalGroups.load_autotagical_format(json_input, append=False)
 =======================================================================
@@ -149,10 +231,11 @@ Base Cases
 >>> test_groups.load_autotagical_format(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": []
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
 -----End Tag Groups-----
@@ -163,7 +246,7 @@ True
 >>> test_groups.load_autotagical_format(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -182,17 +265,6 @@ True
 ...         ]
 ...       },
 ...       {
-...         "name": "Beer",
-...         "tags": [
-...           "ipa",
-...           "dipa",
-...           "pale_ale",
-...           "witbier",
-...           "dubbel",
-...           "tripel"
-...         ]
-...       },
-...       {
 ...         "name": "Whisky",
 ...         "tags": [
 ...           "bourbon",
@@ -203,10 +275,10 @@ True
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
-  Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
   Belgian Styles: ['dubbel', 'tripel', 'witbier']
   Whisky: ['bourbon', 'rye', 'scotch']
 -----End Tag Groups-----
@@ -222,7 +294,7 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 >>> test_groups.load_autotagical_format(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -235,6 +307,7 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -242,7 +315,7 @@ True
 >>> test_groups.load_autotagical_format(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "Whisky",
@@ -259,6 +332,7 @@ True
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['american_light_lager']
@@ -271,7 +345,7 @@ True
 >>> test_groups.load_autotagical_format(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -284,6 +358,7 @@ True
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -291,7 +366,7 @@ True
 >>> test_groups.load_autotagical_format(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "Whisky",
@@ -308,6 +383,7 @@ True
 ...     ]
 ...   }, True)
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['american_light_lager', 'dipa', 'ipa', 'pale_ale']
@@ -353,6 +429,511 @@ False
 ...   })
 False
 
+Inheritance Tests
+-----------------
+
+* Simple case
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "/G|American Styles",
+...           "witbier"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'ipa', 'pale_ale', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
+* Multiple inheritance
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "/G|American Styles",
+...           "/G|Belgian Styles",
+...           "english_ipa"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'dubbel', 'english_ipa', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
+* Multilevel inheritance
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "Hoppy Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa"
+...         ]
+...       },
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "/G|Hoppy Styles",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "/G|American Styles",
+...           "/G|Belgian Styles"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Hoppy Styles: ['dipa', 'ipa']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
+* Flexible ordering
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "/G|American Styles",
+...           "/G|Belgian Styles"
+...         ]
+...       },
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "/G|Hoppy Styles",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       },
+...       {
+...         "name": "Hoppy Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Hoppy Styles: ['dipa', 'ipa']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
+* Diamond problem
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "Beer",
+...         "tags": [
+...           "/G|American Styles",
+...           "/G|Refrigerated Styles",
+...           "/G|Belgian Styles"
+...         ]
+...       },
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "/G|Hoppy Styles",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       },
+...       {
+...         "name": "Refrigerated Styles",
+...         "tags": [
+...           "/G|Hoppy Styles",
+...           "american_light_lager"
+...         ]
+...       },
+...       {
+...         "name": "Hoppy Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Beer: ['american_light_lager', 'dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Hoppy Styles: ['dipa', 'ipa']
+  Refrigerated Styles: ['american_light_lager', 'dipa', 'ipa']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
+* Circular inheritance
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "Good Beer",
+...         "tags": [
+...           "/G|American Styles",
+...           "/G|Belgian Styles",
+...           "/G|Refrigerated Styles"
+...         ]
+...       },
+...       {
+...         "name": "American Styles",
+...         "tags": [
+...           "/G|Hoppy Styles",
+...           "pale_ale"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       },
+...       {
+...         "name": "Refrigerated Styles",
+...         "tags": [
+...           "/G|Hoppy Styles",
+...           "american_light_lager"
+...         ]
+...       },
+...       {
+...         "name": "Hoppy Styles",
+...         "tags": [
+...           "ipa",
+...           "dipa",
+...           "/G|Good Beer",
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  American Styles: ['dipa', 'ipa', 'pale_ale']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Good Beer: ['american_light_lager', 'dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Hoppy Styles: ['american_light_lager', 'dipa', 'dubbel', 'ipa', 'pale_ale', 'tripel', 'witbier']
+  Refrigerated Styles: ['american_light_lager', 'dipa', 'ipa']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
+Regex Tag Groups
+----------------
+
+* "Pure" Regex group loading
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "Account Number",
+...         "tags": [
+...           "/RE|(?:xx|\\*\\*)[0-9]{4}"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  Account Number: ['/RE|(?:xx|\\*\\*)[0-9]{4}']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
+* Mixed group loading
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "Account Number",
+...         "tags": [
+...           "/RE|(?:xx)[0-9]{4}",
+...           "/RE|(?:\\*\\*)[0-9]{4}",
+...           "acct",
+...           "acct2"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  Account Number: ['acct', 'acct2', '/RE|(?:\\*\\*)[0-9]{4}', '/RE|(?:xx)[0-9]{4}']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
+* Inheritance of regex loading
+
+>>> test_groups = AutotagicalGroups()
+>>> test_groups.load_autotagical_format(
+...   {
+...     "file_type": "autotagical_tag_groups",
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
+...       {
+...         "name": "Account Number",
+...         "tags": [
+...           "/RE|(?:xx)[0-9]{4}",
+...           "/RE|(?:\\*\\*)[0-9]{4}",
+...           "acct",
+...           "acct2"
+...         ]
+...       },
+...       {
+...         "name": "More Accounts",
+...         "tags": [
+...           "/G|Account Number",
+...           "acct3"
+...         ]
+...       },
+...       {
+...         "name": "Even More Accounts",
+...         "tags": [
+...           "/G|More Accounts",
+...           "acct4"
+...         ]
+...       },
+...       {
+...         "name": "Belgian Styles",
+...         "tags": [
+...           "witbier",
+...           "dubbel",
+...           "tripel"
+...         ]
+...       },
+...       {
+...         "name": "Whisky",
+...         "tags": [
+...           "bourbon",
+...           "rye",
+...           "scotch"
+...         ]
+...       }
+...     ]
+...   })
+True
+>>> test_groups.process_groups()
+>>> print(test_groups)
+-----Tag Groups----
+  Account Number: ['acct', 'acct2', '/RE|(?:\\*\\*)[0-9]{4}', '/RE|(?:xx)[0-9]{4}']
+  Belgian Styles: ['dubbel', 'tripel', 'witbier']
+  Even More Accounts: ['acct', 'acct2', 'acct3', 'acct4', '/RE|(?:\\*\\*)[0-9]{4}', '/RE|(?:xx)[0-9]{4}']
+  More Accounts: ['acct', 'acct2', 'acct3', '/RE|(?:\\*\\*)[0-9]{4}', '/RE|(?:xx)[0-9]{4}']
+  Whisky: ['bourbon', 'rye', 'scotch']
+-----End Tag Groups-----
+
 AutotagicalGroups.load_tagspaces_format(json_input, append=False)
 =======================================================================
 
@@ -372,6 +953,7 @@ Base Cases
 ...     "tagGroups": []
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
 -----End Tag Groups-----
@@ -619,6 +1201,7 @@ True
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -658,6 +1241,7 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...   ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -685,6 +1269,7 @@ True
 ...   ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   Whisky: ['bourbon', 'rye', 'scotch']
@@ -716,6 +1301,7 @@ True
 ...   ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -743,6 +1329,7 @@ True
 ...   ]
 ...   }, True)
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -763,6 +1350,7 @@ Incorrect Cases
 ...     "tagGroups": []
 ...   })
 True
+>>> test_groups.process_groups()
 
 * Out of date settings version
 
@@ -775,6 +1363,7 @@ True
 ...     "tagGroups": []
 ...   })
 True
+>>> test_groups.process_groups()
 
 Bad Case
 --------
@@ -807,7 +1396,7 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 >>> test_groups.load_tag_groups(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -820,6 +1409,7 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -827,7 +1417,7 @@ True
 >>> test_groups.load_tag_groups(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "Whisky",
@@ -840,6 +1430,7 @@ True
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   Whisky: ['bourbon', 'rye', 'scotch']
@@ -851,7 +1442,7 @@ True
 >>> test_groups.load_tag_groups(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "American Styles",
@@ -864,6 +1455,7 @@ True
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -871,7 +1463,7 @@ True
 >>> test_groups.load_tag_groups(
 ...   {
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
+...     "tag_group_file_version": "1.1",
 ...     "tag_groups": [
 ...       {
 ...         "name": "Whisky",
@@ -884,6 +1476,7 @@ True
 ...     ]
 ...   }, True)
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -897,18 +1490,19 @@ Multiply defined tag groups should work (but warn using *logging.warning*).
 
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
-...     "tag_groups" : [
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
 ...       {
-...         "name" : "American Styles",
-...         "tags" : ["dipa", "ipa", "pale_ale"]
+...         "name": "American Styles",
+...         "tags": ["dipa", "ipa", "pale_ale"]
 ...       },
 ...       {
-...         "name" : "American Styles",
-...         "tags" : ["american_light_lager"]
+...         "name": "American Styles",
+...         "tags": ["american_light_lager"]
 ...       }]
 ...     })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['american_light_lager', 'dipa', 'ipa', 'pale_ale']
@@ -933,11 +1527,11 @@ False
 
 >>> test_groups.load_tag_groups({
 ...     "file_type": "wrong",
-...     "tag_group_file_version": "1.0",
-...     "tag_groups" : [
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
 ...       {
-...         "name" : "American Styles",
-...         "tags" : ["dipa", "ipa", "pale_ale"]
+...         "name": "American Styles",
+...         "tags": ["dipa", "ipa", "pale_ale"]
 ...       }]
 ...     })
 False
@@ -947,10 +1541,10 @@ False
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
 ...     "tag_group_file_version": "0.9",
-...     "tag_groups" : [
+...     "tag_groups": [
 ...       {
-...         "name" : "American Styles",
-...         "tags" : ["dipa", "ipa", "pale_ale"]
+...         "name": "American Styles",
+...         "tags": ["dipa", "ipa", "pale_ale"]
 ...       }]
 ...     })
 False
@@ -958,10 +1552,10 @@ False
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
 ...     "tag_group_file_version": "99.9",
-...     "tag_groups" : [
+...     "tag_groups": [
 ...       {
-...         "name" : "American Styles",
-...         "tags" : ["dipa", "ipa", "pale_ale"]
+...         "name": "American Styles",
+...         "tags": ["dipa", "ipa", "pale_ale"]
 ...       }]
 ...     })
 False
@@ -970,50 +1564,50 @@ False
 
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
-...     "tag_groups" : "string"
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": "string"
 ...     })
 False
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
-...     "tag_groups" : []
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": []
 ...     })
 False
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
-...     "tag_groups" : [
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
 ...       {
-...         "wrong_key" : "is wrong",
+...         "wrong_key": "is wrong",
 ...       }]
 ...     })
 False
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
-...     "tag_groups" : [
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
 ...       {
-...         "name" : "American Styles",
+...         "name": "American Styles",
 ...       }]
 ...     })
 False
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
-...     "tag_groups" : [
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
 ...       {
-...         "tags" : ["dipa", "ipa", "pale_ale"]
+...         "tags": ["dipa", "ipa", "pale_ale"]
 ...       }]
 ...     })
 False
 >>> test_groups.load_tag_groups({
 ...     "file_type": "autotagical_tag_groups",
-...     "tag_group_file_version": "1.0",
-...     "tag_groups" : [
+...     "tag_group_file_version": "1.1",
+...     "tag_groups": [
 ...       {
-...         "name" : "American Styles",
-...         "tags" : [1, 2]
+...         "name": "American Styles",
+...         "tags": [1, 2]
 ...       }]
 ...     })
 False
@@ -1276,6 +1870,7 @@ False
 ...     ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -1315,6 +1910,7 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 ...   ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -1342,6 +1938,7 @@ True
 ...   ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   Whisky: ['bourbon', 'rye', 'scotch']
@@ -1373,6 +1970,7 @@ True
 ...   ]
 ...   })
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -1401,6 +1999,7 @@ True
 ...   ]
 ...   }, True)
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -1436,6 +2035,7 @@ Incorrect Cases
 ...   ]
 ...   })
 True
+>>> test_groups.process_groups()
 
 * Out of date settings version
 
@@ -1463,6 +2063,7 @@ True
 ...   ]
 ...   })
 True
+>>> test_groups.process_groups()
 
 * Error-handling for key errors ensures it will actually fail if an updated format changes things.
 
@@ -1484,14 +2085,16 @@ Loads tag groups from JSON data in a string.  This validates against known schem
 * Without append
 
 >>> test_groups = AutotagicalGroups()
->>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.0","tag_groups":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
+>>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.1","tag_groups":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
 -----End Tag Groups-----
->>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.0","tag_groups":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}')
+>>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.1","tag_groups":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}')
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   Whisky: ['bourbon', 'rye', 'scotch']
@@ -1500,14 +2103,16 @@ True
 * With append
 
 >>> test_groups = AutotagicalGroups()
->>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.0","tag_groups":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
+>>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.1","tag_groups":[{"name":"American Styles","tags":["ipa","dipa","pale_ale"]}]}')
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
 -----End Tag Groups-----
->>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.0","tag_groups":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}', True)
+>>> test_groups.load_tag_groups_from_string('{"file_type":"autotagical_tag_groups","tag_group_file_version":"1.1","tag_groups":[{"name":"Whisky","tags":["bourbon","rye","scotch"]}]}', True)
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -1527,6 +2132,7 @@ Normal Usage
 >>> test_groups = AutotagicalGroups()
 >>> test_groups.load_tag_groups_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_tag_groups.json'))
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']
@@ -1540,6 +2146,7 @@ True
 >>> test_groups = AutotagicalGroups()
 >>> test_groups.load_tag_groups_from_file(os.path.join(os.path.dirname(sys.path[0]), 'tests', 'files', 'test_tagspaces_tag_library.json'))
 True
+>>> test_groups.process_groups()
 >>> print(test_groups)
 -----Tag Groups----
   American Styles: ['dipa', 'ipa', 'pale_ale']

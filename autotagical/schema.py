@@ -35,10 +35,10 @@ def _repr_filter_tree(filter_level, indent=0):
 
     Parameters
     ----------
-    filter_level : dict
+    filter_level: dict
         The filter level to print.  Should have keys 'filter', 'subfolder', and
         'sublevels'.
-    indent : int
+    indent: int
         The number of spaces to begin indenting by.  Should be a multiple of 2.
 
     Returns
@@ -85,42 +85,42 @@ class AutotagicalSchema:
 
     Instance Attributes
     -------------------
-    tag_formats : list of dict
+    tag_formats: list of dict
         A list of dictionaries, each with strings as keys.  It will be of the
         form:
             [
                 {
-                    'tag_pattern' : str
+                    'tag_pattern': str
                         'regex containing groups "file", "raw_tags", "tags",
                          and "extension"'
-                    'tag_split_pattern' : str
+                    'tag_split_pattern': str
                         'regex to be used with re.split() to separate tags'
                 }
             ]
-    unnamed_patterns : list
+    unnamed_patterns: list
         List of strings, each a regex pattern that defines unnamed files.
-    renaming_schemas : list of dict
+    renaming_schemas: list of dict
         List of dictionaries, each with strings as keys.  It will be of the
         form:
             [
                 {
-                    'filter' : list of str
+                    'filter': list of str
                         ['condition set 1', 'condition set 2', ...]
-                    'format_string' : str
+                    'format_string': str
                         'renaming format string containing operators, e.g
                          /?|tag1/T|true/F|false/E?|'
                 }
             ]
-    movement_schema : list of dict
+    movement_schema: list of dict
         List of dictionaries, each with strings as keys keys.  It will be of
         the form:
             [
                 {
-                    'filter' : list of str
+                    'filter': list of str
                         ['condition set 1', 'condition set 2', ...]
-                    'subfolder' : str
+                    'subfolder': str
                         'subfolder name'
-                    'sublevels' : list of dict
+                    'sublevels': list of dict
                     [
                         {additional dict with filter, subfolder, sublevels}
                     ]
@@ -144,7 +144,7 @@ class AutotagicalSchema:
         formats to ensure the data structure is correct.
     """
 
-    SCHEMA_FILE_VERSION = "1.0"
+    SCHEMA_FILE_VERSION = '1.1'
 
     def __init__(self):
         """
@@ -206,12 +206,12 @@ class AutotagicalSchema:
 
         Parameters
         ----------
-        json_input : dict
+        json_input: dict
             A complex dictionary produced from parsing JSON.  It should be in
             the form:
                 {
                   'file_type': 'autotagical_schema',
-                  'schema_file_version': '1.0',
+                  'schema_file_version': '1.1',
                   'tag_formats': [
                     {
                       'tag_pattern': 'pattern',

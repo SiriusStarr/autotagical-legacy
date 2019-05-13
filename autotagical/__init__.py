@@ -15,9 +15,10 @@ Usage
 -----
 autotagical [-h] [-V] [-C <config file>] [-H] [-i <input path>]
             [-I <ignore file>] [-R] [-o <output path>] [-O]
-            [-g <tag group file>] [-s <schema file>] [-A] [-F] [-k] [-m]
-            [-M] [-n] [-N] [-t] [--debug] [-l <log file>] [-L] [-P]
-            [-q] [-v] [--force] [--yes]
+            [-g <tag group file>] [-s <schema file>] [-A] [--cleanin]
+            [--cleanout] [-c] [-F] [-k] [-m] [-M] [-n] [-N] [-t]
+            [--debug] [-l <log file>] [-L] [-P] [-q] [-v] [--force]
+            [--yes]
 """
 
-__version__ = '1.0.0'  # Define the current version
+__version__ = '1.1.0'  # Define the current version

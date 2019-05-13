@@ -16,16 +16,18 @@ Usage
 -----
 autotagical [-h] [-V] [-C <config file>] [-H] [-i <input path>]
             [-I <ignore file>] [-R] [-o <output path>] [-O]
-            [-g <tag group file>] [-s <schema file>] [-A] [-F] [-k] [-m]
-            [-M] [-n] [-N] [-t] [--debug] [-l <log file>] [-L] [-P]
-            [-q] [-v] [--force] [--yes]
+            [-g <tag group file>] [-s <schema file>] [-A] [--cleanin]
+            [--cleanout] [-c] [-F] [-k] [-m] [-M] [-n] [-N] [-t]
+            [--debug] [-l <log file>] [-L] [-P] [-q] [-v] [--force]
+            [--yes]
 """
 
 import sys
 import logging
 from autotagical.settings import AutotagicalSettings
 from autotagical import __version__ as version
-from autotagical.file_handler import AutotagicalFileHandler, move_files
+from autotagical.file_handler import AutotagicalFileHandler, \
+                                     move_files, clean_folder
 from autotagical.moving import determine_destination
 from autotagical.naming import AutotagicalNamer
 
@@ -85,3 +87,7 @@ if __name__ == '__main__':
 
     # Actually move files
     move_files(files_out, SETTINGS)
+
+    # Clean up if told to
+    for folder in SETTINGS.clean_folders:
+        clean_folder(folder, SETTINGS.trial_run)

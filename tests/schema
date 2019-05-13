@@ -63,7 +63,7 @@ Base Cases
 >>> test_schema = AutotagicalSchema()
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": [],
@@ -77,7 +77,7 @@ True
 >>> test_schema = AutotagicalSchema()
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [
 ...     {
 ...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
@@ -232,7 +232,7 @@ With the append parameter set to True, we shouldn't overwrite the old tags.
 >>> test_schema = AutotagicalSchema()
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [
 ...     {
 ...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
@@ -314,7 +314,7 @@ True
 -----End Schema-----
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [
 ...     {
 ...       "tag_pattern": "<tagpattern>",
@@ -402,7 +402,7 @@ True
 >>> test_schema = AutotagicalSchema()
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [
 ...     {
 ...       "tag_pattern": "(?P<file>.+)(?P<raw_tags>\\[(?P<tags>.+?)\\])(?P<extension>.*?)",
@@ -484,7 +484,7 @@ True
 -----End Schema-----
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [
 ...     {
 ...       "tag_pattern": "<tagpattern>",
@@ -654,7 +654,7 @@ False
 >>> test_schema = AutotagicalSchema()
 >>> test_schema.load_schema({
 ...   "file_type": "wrong",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": [],
@@ -667,7 +667,7 @@ False
 >>> test_schema = AutotagicalSchema()
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": []
@@ -675,7 +675,7 @@ False
 False
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
 ...   "movement_schema": []
@@ -683,7 +683,7 @@ False
 False
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "renaming_schemas": [],
 ...   "movement_schema": []
@@ -691,7 +691,7 @@ False
 False
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": [],
 ...   "movement_schema": []
@@ -699,7 +699,7 @@ False
 False
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": [],
@@ -708,7 +708,7 @@ False
 False
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": "string",
@@ -717,7 +717,7 @@ False
 False
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
 ...   "unnamed_patterns": "string",
 ...   "renaming_schemas": [],
@@ -726,7 +726,7 @@ False
 False
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": ["string"],
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": [],
@@ -735,7 +735,7 @@ False
 False
 >>> test_schema.load_schema({
 ...   "file_type": "autotagical_schema",
-...   "schema_file_version": "1.0",
+...   "schema_file_version": "1.1",
 ...   "tag_formats": "string",
 ...   "unnamed_patterns": [" "],
 ...   "renaming_schemas": [],

@@ -99,14 +99,14 @@ def check_condition(tag_array, condition, tag_groups):
 
     Parameters
     ----------
-    tag_array : list of str
+    tag_array: list of str
         A list of strings, each holding a tag.  These tags will be considered
         as a whole against the provided condition.  It should be in the form:
             ['tag1', 'tag2', ...]
-    condition : str
+    condition: str
         A string with the condition against which the tags will be matched.
         This may contain various special operators.
-    tag_groups : AutotagicalGroups
+    tag_groups: AutotagicalGroups
         An AutotagicalGroups object that will be used to resolve tag group
         operators.
 
@@ -138,12 +138,9 @@ def check_condition(tag_array, condition, tag_groups):
 
         # If it's a tag group
         if match.group('tag_group'):
-            # Load what tags are in that tag_group
-            group_tags = tag_groups.get_tags_in_group(match.group('tag_group'))
-            # See if any tag is in the tag gorup and return accordingly
-            for tag in tag_array:
-                if tag in group_tags:
-                    return match_found
+            # See if tags match the group
+            if tag_groups.tag_in_group(tag_array, match.group('tag_group')):
+                return match_found
             return not match_found
 
     # If here, something went horribly wrong, throw an error
@@ -160,15 +157,15 @@ def check_against_condition_set(tag_array, condition_set, tag_groups):
 
     Parameters
     ----------
-    tag_array : list of str
+    tag_array: list of str
         A list of strings, each holding a tag.  These tags will be considered
         as a whole against the provided condition set.  It should be in the
         form: ['tag1', 'tag2', ...]
-    condition_set : str
+    condition_set: str
         A string with the condition set against which the tags will be
         matched.  This may contain various special operators, and may be
         multiple conditions concatenated with the AND operator /&|.
-    tag_groups : AutotagicalGroups
+    tag_groups: AutotagicalGroups
         An AutotagicalGroups object that will be used to resolve group
         operators.
 
@@ -204,15 +201,15 @@ def check_against_filter(tag_array, check_filter, tag_groups):
 
     Parameters
     ----------
-    tag_array : list of str
+    tag_array: list of str
         A list of strings, each holding a tag.  These tags will be considered
         as a whole against the provided filter.  It should be in the form:
             ['tag1', 'tag2', ...]
-    filter : list of str
+    filter: list of str
         A list of strings, each containing a condition set against which the
         tags will be matched.  Each may contain various special operators and
         may be multiple conditions concatenated with the AND operator /&|.
-    tag_groups : AutotagicalGroups
+    tag_groups: AutotagicalGroups
         An AutotagicalGroups object that will be used to resolve group
         operators.
 
