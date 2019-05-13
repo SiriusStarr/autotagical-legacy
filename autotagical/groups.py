@@ -294,25 +294,19 @@ class AutotagicalGroups:
                 self.__group_data[group] = set()
                 self.__to_compile[group] = set()
                 for entry in entries:
-                    # If it's shorter than "/G|a" or doesn't start with '/G|'
-                    # or '/RE|' it has to be a simple tag.
-                    # pylint: disable=C0330
-                    if len(entry) < 4 \
-                       or (entry[:3] != '/G|'
-                           and (len(entry) < 5
-                                or entry[:4] != '/RE|')):
-                        self.__group_data[group].add(entry)
-                        continue
-                    # Otherwise, check for special groups and add them to be
-                    # processed
-                    if entry[:3] == '/G|':
+                    # Check for special groups and add them to be processed
+                    if entry.startswith('/G|'):
                         if group not in self.__inheritance:
                             self.__inheritance[group] = set()
                         self.__inheritance[group].add(entry[3:])
-                    elif entry[:4] == '/RE|':
+                    elif entry.startswith('/RE|'):
                         if group not in self.__to_compile:
                             self.__to_compile[group] = set()
                         self.__to_compile[group].add(entry[4:])
+                    else:
+                        # Simple tags, so just add
+                        self.__group_data[group].add(entry)
+                        continue
             # Process special groups
             self.__resolve_inheritance()
             self.__compile_regexes()
