@@ -491,6 +491,19 @@ True
 >>> process_filter_level(test_file_4, {"filter": ["/*|"], "subfolder": "This is a /?|" + complex_filter + "/T|/TAGS|/F|/EXT|/E?| conditional operator.", "sublevels": []}, test_groups) == (True, os.path.join('This is a .txt conditional operator.'))
 True
 
+* Subfolder operator
+
+>>> process_filter_level(test_file_1, {"filter": ["/*|"], "subfolder": "American Styles//|/?TIG|American Styles/| Folder", "sublevels": []}, test_groups) == (True, os.path.join('American Styles', 'dipa Folder'))
+True
+>>> process_filter_level(test_file_1, {"filter": ["/*|"], "subfolder": "American Styles//|/?TIG|Whisky/| Folder", "sublevels": []}, test_groups) == (True, os.path.join('American Styles', ' Folder'))
+True
+>>> process_filter_level(test_file_1, {"filter": ["/*|"], "subfolder": "American Styles//|/?TIG|Whisky/|", "sublevels": []}, test_groups) == (True, os.path.join('American Styles'))
+True
+>>> process_filter_level(test_file_1, {"filter": ["/*|"], "subfolder": "//|American Styles//|/?TIG|American Styles/| Folder//|", "sublevels": []}, test_groups) == (True, os.path.join('American Styles', 'dipa Folder'))
+True
+>>> process_filter_level(test_file_1, {"filter": ["/*|"], "subfolder": "//|American Styles//|/?TIG|American Styles/| Folder//| ", "sublevels": []}, test_groups) == (True, os.path.join('American Styles', 'dipa Folder', ' '))
+True
+
 * Bad Case
 
 >>> process_filter_level(test_file_1, {"filter": ["/*|"], "subfolder": "This is a bad /ITER|bad /#| bad/EITER| format string.", "sublevels": []}, test_groups) == (True, os.path.join('This is a bad  format string.'))

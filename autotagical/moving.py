@@ -25,7 +25,8 @@ determine_destination(file_list, movement_schema, tag_groups)
 import logging
 import os
 from autotagical.filtering import check_against_filter
-from autotagical.naming import substitute_operators, strip_iters
+from autotagical.naming import substitute_operators, strip_iters, \
+                               FormatStringType
 from autotagical.schema import SchemaError
 
 
@@ -79,8 +80,9 @@ def process_filter_level(file, filter_level, tag_groups):
 
         # Interpret format string
         if filter_level['subfolder']:
-            subfolder_name = substitute_operators(strip_iters(
-                filter_level['subfolder']), file, tag_groups, False)
+            subfolder_name = substitute_operators(
+                strip_iters(filter_level['subfolder']),
+                file, tag_groups, FormatStringType.FOLDER_NAME)
         else:
             subfolder_name = ''
 

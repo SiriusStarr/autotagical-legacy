@@ -26,7 +26,8 @@ strip_iters(format_string)
 evaluate_iters(format_string, occurrences)
     Takes a format string and evaluates any /ITER| operators in it, inserting
     occurence for the /#| operator.
-substitute_operators(format_string, file, tag_groups, filename=True)
+substitute_operators(format_string, file, tag_groups,
+                     format_string_type=FormatStringType.FILE_NAME)
     Completely resolve all operators in format_string.  format_string must not
     contain /ITER| operators.
 
@@ -40,9 +41,19 @@ AutotagicalNamer
 import logging
 import re
 import sys
+import os
+from enum import Enum
 from autotagical.filtering import check_against_filter, \
                                   check_against_condition_set
 from autotagical.schema import SchemaError
+
+
+class FormatStringType(Enum):
+    """
+    Denotes the type of format string to be processed.
+    """
+    FOLDER_NAME = 0
+    FILE_NAME = 1
 
 
 def _tig_operator_sub(tag_array, tag_groups, match_obj):
@@ -191,7 +202,8 @@ def evaluate_iters(format_string, occurrence):
     return to_return.replace('/#|', str(occurrence))
 
 
-def substitute_operators(format_string, file, tag_groups, filename=True):
+def substitute_operators(format_string, file, tag_groups,
+                         format_string_type=FormatStringType.FILE_NAME):
     """
     Takes a format string without /ITER| operators, an AutotagicalFile object,
     and an AutotagicalGroups object, and fully evaluates all operators within
@@ -207,14 +219,13 @@ def substitute_operators(format_string, file, tag_groups, filename=True):
         The file to be considered.
     tag_groups: AutotagicalGroups
         An AutotagicalGroups object, representing known tag groups.
-    filename: bool=True
-        Whether renaming a filename or not.  Silence warnings about missing
-        tags and extensions if false.
+    format_string_type: FormatStringType (default FILE_NAME)
+        The type of format string to interpret
 
     Returns
     -------
     str
-        The determined output filename.
+        The determined string after inserting operators.
     """
 
     # If the format string is completely empty, something is horribly wrong.
@@ -234,7 +245,7 @@ def substitute_operators(format_string, file, tag_groups, filename=True):
         to_return)
 
     # Warn if no extension or no tags for files
-    if filename:
+    if format_string_type == FormatStringType.FILE_NAME:
         if '/TAGS|' not in to_return:
             logging.warning('Renamed a file without preserving tags!  This '
                             'will lead to loss of tagging.  Based on format '
@@ -249,13 +260,22 @@ def substitute_operators(format_string, file, tag_groups, filename=True):
     to_return = to_return.replace('/TAGS|', file.tags)
     to_return = to_return.replace('/FILE|', file.name)
 
-    # Check if there are any /'s left, as this is a very bad sign.
-    if '/' in to_return:
-        logging.error('A "/" is still in the format string after reducing '
-                      'all operators!  This probably means there was a '
-                      'problem with the format string!\nFormat String: %s\n'
-                      'Output: %s', format_string, to_return)
-        sys.exit()
+    def check_return(value):
+        if '/' in value:
+            logging.error('A "/" is still in the format string after reducing '
+                          'all operators!  This probably means there was a '
+                          'problem with the format string!\nFormat String: %s'
+                          '\nOutput: %s', format_string, to_return)
+            sys.exit()
+
+    # Check for subfolder operator if folder name
+    if format_string_type == FormatStringType.FOLDER_NAME:
+        # Split and strip blank folders
+        to_return = [folder for folder in to_return.split('//|') if folder]
+        check_return(''.join(to_return))
+        to_return = os.path.join(*to_return)
+    else:
+        check_return(to_return)
 
     # If the operators evaluated to a completely blank string, this is bad,
     # because can't use that

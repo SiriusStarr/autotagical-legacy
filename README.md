@@ -486,7 +486,7 @@ first partial one *will* be used to move the file.  It is bad practice to rely
 on this behavior though; one should use the `/*|` operator if one explicitly
 wishes absolutely any file that reaches a filter level to reside there.
 
-### Filters
+## Filters
 
 A filter (wherever it might show up in a schema) is defined by an array of
 condition sets.  These condition sets are combined in the logical sense by
@@ -515,12 +515,15 @@ conditional `/?|` operator):
 There are no (realistic) limits on the degree to which these operators may be
 combined or how many condition sets a filter might have.
 
-### Format Strings
+## Format Strings
 
 A format string is simply a string that may or may not contain various
 operators.  These operators will be replaced with the corresponding data when
-the format string is interpreted.
+the format string is interpreted.  Most operators may be used in either file
+name format strings or subfolder name format strings, but a few are specific to
+one use or the other, as noted below.
 
+### General Operators
 * `/EXT|` -- Anywhere it is put in the format string, `/EXT|` will be replaced
   with the original extension of the file, as defined by the `extension` group
   in the "tag_formats" regex that matched the file.  This is obviously useful if
@@ -569,23 +572,61 @@ the format string is interpreted.
   * `File [tag1, tag2]` -- "Tag: tag1"
   * `File [tag2, tag4]` -- "Tag: "
   * `File [tag1, tag2, tag3]` -- "Tag: tag2"
+
+### Subfolders Only
+The following operators only function in format strings for subfolder names and
+are otherwise ignored.
+* `//|` -- The subfolder operator (`//|`) represents the beginning of a new
+subfolder, allowing files to be placed down multiple folders with a single
+filter level.  It is most useful when combined with the tag in group `/?TIG|`
+operator, e.g. in the following example, which will place dogs into a folder
+named "Dogs" and then into subfolders by breed:
+
+```json
+"tag_groups": [
+  {
+    "name": "Dogs",
+    "tags": ["golden", "labrador", "poodle"]
+  }
+]
+
+"movement_schema": [
+  {
+    "filter": ["/G|Dogs"],
+    "subfolder": "Dogs//|/?TIG|Dogs/|",
+    "sublevels": []
+  }
+]
+```
+
+This will lead to files being sorted into the following directory structure:
+
+```
+Dogs/
+    golden/
+    labrador/
+    poodle/
+```
+
+### File Names Only
+The following operators only function in format strings for renaming files and
+are otherwise ignored.
 * `/ITER|<text>/#|<other text>/EITER|` -- The `/ITER|` operator is complicated
   but important.  It is invoked only in the event that multiple files are going
   to be renamed to the same name.  In this case, the text is placed in the file
   name, along with `/#|` being replaced by the n-th file that this is that has
   had the same name.  Otherwise, the entirety of the `/ITER|` operator is
-  ignored.  **The /ITER| operator should not be used in folder name format
-  strings.  It will be ignored.**
-  In essence, the `/ITER|` tag "counts" how many times the same file name has
-  been produced.  It is good practice to always include an `/ITER|` operator in
-  your schema to avoid files not being renamed due to potential clobbering.
-  `/#|` may appear more than once in an `/ITER|` operator, but there is usually
-  no need to.  The `/ITER|` operator *may* contain any other operator, including
-  the conditional operator `/?|`, but may not be nested.  Note that the `/ITER|`
-  operator **will not be used** if files end up with the **same name but
-  different output directories**.  It will only appear if necessary to avoid
-  clobbering.  An example will make this easier to understand.  Consider the
-  format string `Widget/ITER| /#|/EITER|` in the following cases:
+  ignored.  In essence, the `/ITER|` tag "counts" how many times the same file
+  name has been produced.  It is good practice to always include an `/ITER|`
+  operator in your schema to avoid files not being renamed due to potential
+  clobbering.  `/#|` may appear more than once in an `/ITER|` operator, but
+  there is usually no need to.  The `/ITER|` operator *may* contain any other
+  operator, including the conditional operator `/?|`, but may not be nested.
+  Note that the `/ITER|` operator **will not be used** if files end up with the
+  **same name but different output directories**.  It will only appear if
+  necessary to avoid clobbering.  An example will make this easier to
+  understand.  Consider the format string `Widget/ITER| /#|/EITER|` in the
+  following cases:
   * 1 matching file -- The file will be named `Widget`.
   * 3 matching files in same folder -- The files will be named `Widget 1`,
     `Widget 2`, and `Widget 3`.
