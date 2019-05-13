@@ -26,7 +26,7 @@ strip_iters(format_string)
 evaluate_iters(format_string, occurrences)
     Takes a format string and evaluates any /ITER| operators in it, inserting
     occurence for the /#| operator.
-substitute_operators(format_string, file, tag_groups)
+substitute_operators(format_string, file, tag_groups, filename=True)
     Completely resolve all operators in format_string.  format_string must not
     contain /ITER| operators.
 
@@ -191,7 +191,7 @@ def evaluate_iters(format_string, occurrence):
     return to_return.replace('/#|', str(occurrence))
 
 
-def substitute_operators(format_string, file, tag_groups):
+def substitute_operators(format_string, file, tag_groups, filename=True):
     """
     Takes a format string without /ITER| operators, an AutotagicalFile object,
     and an AutotagicalGroups object, and fully evaluates all operators within
@@ -207,6 +207,9 @@ def substitute_operators(format_string, file, tag_groups):
         The file to be considered.
     tag_groups: AutotagicalGroups
         An AutotagicalGroups object, representing known tag groups.
+    filename: bool=True
+        Whether renaming a filename or not.  Silence warnings about missing
+        tags and extensions if false.
 
     Returns
     -------
@@ -230,14 +233,16 @@ def substitute_operators(format_string, file, tag_groups):
         lambda a: _tig_operator_sub(file.tag_array, tag_groups, a),
         to_return)
 
-    # Warn if no extension or no tags
-    if '/TAGS|' not in to_return:
-        logging.warning('Renamed a file without preserving tags!  This will '
-                        'lead to loss of tagging.  Based on format string: %s',
-                        format_string)
-    if '/EXT|' not in to_return:
-        logging.warning('Renamed a file without preserving original extension,'
-                        ' based on format string: %s', format_string)
+    # Warn if no extension or no tags for files
+    if filename:
+        if '/TAGS|' not in to_return:
+            logging.warning('Renamed a file without preserving tags!  This '
+                            'will lead to loss of tagging.  Based on format '
+                            'string: %s', format_string)
+        if '/EXT|' not in to_return:
+            logging.warning('Renamed a file without preserving original '
+                            'extension, based on format string: %s',
+                            format_string)
 
     # Anything that is left are simple replacement operators, so sub them all
     to_return = to_return.replace('/EXT|', file.extension)
@@ -360,9 +365,6 @@ class AutotagicalNamer:
         if not renaming_schemas:
             logging.error('Completely empty renaming schemas!')
             raise SchemaError('Completely empty renaming schemas!')
-        if not unnamed_patterns:
-            logging.error('Completely empty unnamed file schema!')
-            raise SchemaError('Completely empty unnamed file schema!')
 
         # Store schema and compile regexes
         self.__renaming_schemas = renaming_schemas

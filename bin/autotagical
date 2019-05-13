@@ -70,24 +70,48 @@ if __name__ == '__main__':
             sys.exit()
 
     # Determine destinations first (since ITER operators require this info)
+    files_out = []
+    named_or_moved = False  # Set if something actually gets done
     if not SETTINGS.rename_only:
-        files_out = determine_destination(FILEHANDLER.get_file_list(),
-                                          SETTINGS.schema.movement_schema,
-                                          SETTINGS.tag_groups)
-    else:
+        if not SETTINGS.schema.movement_schema:
+            logging.warning('Completely empty moving schema, but told to '
+                            'move files.  If you do not want to move files, '
+                            'use the -n option.  Otherwise, load a schema '
+                            'that contains movement schema.')
+        else:
+            files_out = determine_destination(FILEHANDLER.get_file_list(),
+                                              SETTINGS.schema.movement_schema,
+                                              SETTINGS.tag_groups)
+            named_or_moved = True
+    if not files_out:
         files_out = FILEHANDLER.get_file_list()
 
     # Determine renaming
     if not SETTINGS.move_only:
-        NAMER = AutotagicalNamer(SETTINGS.schema.renaming_schemas,
-                                 SETTINGS.schema.unnamed_patterns)
-        files_out = NAMER.determine_names(files_out, SETTINGS.tag_groups,
-                                          SETTINGS.force_name,
-                                          SETTINGS.force_name_fail_bad)
+        if not SETTINGS.schema.renaming_schemas:
+            logging.warning('Completely empty renaming schemas, but told to '
+                            'rename files.  If you do not want to rename '
+                            'files, use the -m option.  Otherwise, load a '
+                            'schema that contains renaming schemas.')
+        elif not SETTINGS.schema.unnamed_patterns and not SETTINGS.force_name:
+            logging.warning('Completely empty unnamed patterns, but told to '
+                            'rename files (and not forcibly rename).  If you '
+                            'do not want to rename files, use the -m option.  '
+                            'If you want to rename all files rather than those'
+                            ' matching a pattern, use the -N option.  '
+                            'Otherwise, load a schema that contains unnamed '
+                            'patterns.')
+        else:
+            NAMER = AutotagicalNamer(SETTINGS.schema.renaming_schemas,
+                                     SETTINGS.schema.unnamed_patterns)
+            files_out = NAMER.determine_names(files_out, SETTINGS.tag_groups,
+                                              SETTINGS.force_name,
+                                              SETTINGS.force_name_fail_bad)
+            named_or_moved = True
 
     # Actually move files
-    move_files(files_out, SETTINGS)
-
-    # Clean up if told to
-    for folder in SETTINGS.clean_folders:
-        clean_folder(folder, SETTINGS.trial_run)
+    if named_or_moved:
+        move_files(files_out, SETTINGS)
+        # Clean up if told to
+        for folder in SETTINGS.clean_folders:
+            clean_folder(folder, SETTINGS.trial_run)

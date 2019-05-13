@@ -642,10 +642,8 @@ Simple Tests
 Traceback (most recent call last):
     ...
 autotagical.schema.SchemaError: Completely empty renaming schemas!
->>> AutotagicalNamer(test_schema.renaming_schemas, [])
-Traceback (most recent call last):
-    ...
-autotagical.schema.SchemaError: Completely empty unnamed file schema!
+>>> AutotagicalNamer(test_schema.renaming_schemas, []) #doctest: +ELLIPSIS
+<autotagical.naming.AutotagicalNamer object at 0x...>
 
 * Correct File
 

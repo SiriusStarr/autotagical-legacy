@@ -80,7 +80,7 @@ def process_filter_level(file, filter_level, tag_groups):
         # Interpret format string
         if filter_level['subfolder']:
             subfolder_name = substitute_operators(strip_iters(
-                filter_level['subfolder']), file, tag_groups)
+                filter_level['subfolder']), file, tag_groups, False)
         else:
             subfolder_name = ''
 
