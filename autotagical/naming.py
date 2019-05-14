@@ -40,7 +40,6 @@ AutotagicalNamer
 
 import logging
 import re
-import sys
 import os
 from enum import Enum
 from autotagical.filtering import check_against_filter, \
@@ -168,7 +167,7 @@ def strip_iters(format_string):
     if '/#|' in stripped:
         logging.error('Encountered /#| occurrence operator outside of /ITER| '
                       'operator!  This will lead to files being renamed '
-                      'properly.')
+                      'properly.  Format string: %s', format_string)
         raise SchemaError('Occurrence /#| operator outside of /ITER|!')
     return stripped
 
@@ -232,6 +231,14 @@ def substitute_operators(format_string, file, tag_groups,
         The determined string after inserting operators.
     """
 
+    def check_return(value):
+        if '/' in value:
+            logging.error('A "/" is still in the format string after reducing '
+                          'all operators!  This probably means there was a '
+                          'problem with the format string!\nFormat String: %s'
+                          '\nOutput: %s', format_string, to_return)
+            raise SchemaError('Residual "/" in format string!')
+
     # If the format string is completely empty, something is horribly wrong.
     if not format_string:
         logging.error('Completely empty format string!')
@@ -277,14 +284,6 @@ def substitute_operators(format_string, file, tag_groups,
         to_return = to_return.replace('/EXT|', file.extension)
         to_return = to_return.replace('/TAGS|', file.tags)
 
-    def check_return(value):
-        if '/' in value:
-            logging.error('A "/" is still in the format string after reducing '
-                          'all operators!  This probably means there was a '
-                          'problem with the format string!\nFormat String: %s'
-                          '\nOutput: %s', format_string, to_return)
-            sys.exit()
-
     # Check for subfolder operator if folder name
     if format_string_type == FormatStringType.FOLDER_NAME:
         # Split and strip blank folders
@@ -327,12 +326,16 @@ class AutotagicalNamer:
         containing filenames that have been produced (used for iter
         operators).  It should be of the following form:
             {
-                "iterless filename": dict
+                'iterless filename': dict
                     A dictionary representing a single file name that has been
                     produced.  It should be of the following form:
                         {
-                            'occurrences': int,
-                                Number of times this name has been produced
+                            'f_string_occur': dict
+                                {
+                                    'format string': int
+                                        Number of times this name has been
+                                        produced by 'format string'
+                                }
                             'first_occurrence': str
                                 Full path to the first file to be named this
                         }
@@ -460,6 +463,52 @@ class AutotagicalNamer:
         return False
 
     # pylint: disable=too-many-arguments
+    def __resolve_collision(self, prod_name, format_string, file, file_list,
+                            tag_groups):
+        def check_iter(value):
+            # If there aren't iters but need to evaluate them, this is bad.
+            if '/ITER|' not in value:
+                logging.error('Encountered renaming collision without /ITER| '
+                              'operator!  This is bad and will lead to files '
+                              'not being renamed/moved properly: %s',
+                              value)
+                raise SchemaError('Renaming collision without /ITER|!')
+
+        # Need to rename original if first time a collision has occurred
+        if len(self.__produced_names[prod_name]['f_string_occur']) == 1:
+            orig_f_str, occ = next(iter(self.__produced_names[prod_name][
+                'f_string_occur'].items()))
+            if occ == 1:
+                logging.debug('First name collision; scheduling rename of '
+                              'first occurrence.')
+                for orig_file in file_list:
+                    # Find the first example
+                    if orig_file.original_path == \
+                       self.__produced_names[prod_name]['first_occurrence']:
+                        # Rename with invoked iter operators
+                        check_iter(orig_f_str)
+                        orig_file.output_name = \
+                            substitute_operators(evaluate_iters(orig_f_str, 1),
+                                                 orig_file, tag_groups)
+                        logging.debug('Due to dupe, file at %s now scheduled '
+                                      'for: %s', orig_file.raw_name,
+                                      orig_file.output_name)
+                        break
+        # Increment number of times we've seen the name
+        if format_string in self.__produced_names[prod_name]['f_string_occur']:
+            self.__produced_names[prod_name]['f_string_occur'][format_string] \
+                += 1
+        else:
+            self.__produced_names[prod_name]['f_string_occur'][format_string] \
+                = 1
+
+        # Name current file with iter now
+        return (substitute_operators(
+            evaluate_iters(format_string, self.__produced_names[prod_name]
+                           ['f_string_occur'][format_string]),
+            file, tag_groups), file_list)
+
+    # pylint: disable=too-many-arguments
     def determine_names(self, file_list, tag_groups, force_name=False,
                         force_fail_bad=False, clear_occurrences=False):
         """
@@ -547,44 +596,22 @@ class AutotagicalNamer:
                                   iterless_name)
                     self.__produced_names[produced] = {
                         'first_occurrence': file.original_path,
-                        'occurrences': 1
+                        'f_string_occur': {
+                            format_string: 1
+                        }
                     }
                     continue
 
-                # If here, then duplicated name found.  Need to rename original
-                # if first time
+                # If here, then duplicated name found.
                 logging.debug('Duplicate file name: %s  Invoking ITER '
                               'operator.', iterless_name)
-                if self.__produced_names[produced]['occurrences'] == 1:
-                    logging.debug('First duplicate; scheduling rename of first'
-                                  ' occurrence.')
-                    for orig_file in return_list:
-                        # Find the first example
-                        if orig_file.original_path == \
-                           self.__produced_names[produced]['first_occurrence']:
-                            # Rename with invoked iter operators
-                            orig_file.output_name = \
-                                substitute_operators(
-                                    evaluate_iters(format_string, 1),
-                                    orig_file, tag_groups)
-                            logging.debug('Due to dupe, file to be named: %s'
-                                          ' now scheduled for: %s',
-                                          iterless_name, orig_file.output_name)
-                            break
-
-                # Increment number of times we've seen the name
-                self.__produced_names[produced]['occurrences'] += 1
-                # Name current file with iter now
-                iter_name = substitute_operators(
-                    evaluate_iters(
-                        format_string,
-                        self.__produced_names[produced]['occurrences']),
-                    file, tag_groups)
-                file.output_name = iter_name
+                file.output_name, return_list = \
+                    self.__resolve_collision(produced, format_string, file,
+                                             return_list, tag_groups)
                 file.rename_failed = False
                 return_list.append(file)
                 logging.debug('Scheduling file:\n%s\nto be renamed to:\n%s',
-                              file.raw_name, iter_name)
+                              file.raw_name, file.output_name)
                 continue
 
             # If we got here, then file was manually named

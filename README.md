@@ -650,6 +650,26 @@ are otherwise ignored.
 `.` dot, not those hidden as Windows does it.  This is most likely a **Won’t
 Fix**.
 
+* *autotagical* does not handle renaming collisions after invocation of the
+  `/ITER|` operator; any such collisions will be detected when the files are
+  actually moved, with the second prompting a warning that it will clobber the
+  first.  This is most likely a **Won't Fix**, as it requires an extraordinary
+  set of circumstances unlikely to occur outside of deliberately trying to
+  create such a collision:
+
+  1. Two files get sorted to the same output folder.
+  1. The files have distinct format strings (not just separate entries in the
+     schema with the same format string).
+  1. The format strings of each (which are different) resolve to the exact same
+     string without `/ITER|` operators.
+  1. The format strings of each (which are different) then resolve to the exact
+     same string when `/ITER|` operators are invoked.
+
+  While certainly possible to craft such a situation, it is difficult to
+  imagine when this would be the intended outcome of a schema.  As the only
+  consequence of such a collision is the latter file not being moved/renamed, it
+  is not worth the logic to detect such collisions.
+
 
 ## Tests
 

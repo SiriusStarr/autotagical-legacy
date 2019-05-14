@@ -1141,3 +1141,160 @@ Clear Occurrences
   Tags: "[non-alcoholic refrigerated]"
   Tag Array: ['non-alcoholic', 'refrigerated']
 -----End File-----
+
+Proper cross-format string collision resolution
+-----------------------------------------------
+
+* Setup
+
+>>> cross_test_file_1 = AutotagicalFile(
+...   name='Unnamed1',
+...   raw_name='',
+...   original_path='',
+...   extension='',
+...   tags='',
+...   tag_array=['tag1']
+... )
+>>> cross_test_file_2 = AutotagicalFile(
+...   name='Unnamed2',
+...   raw_name='',
+...   original_path='',
+...   extension='',
+...   tags='',
+...   tag_array=['tag2']
+... )
+>>> cross_test_file_3 = AutotagicalFile(
+...   name='Unnamed3',
+...   raw_name='',
+...   original_path='',
+...   extension='',
+...   tags='',
+...   tag_array=['tag1']
+... )
+>>> cross_test_file_4 = AutotagicalFile(
+...   name='Unnamed4',
+...   raw_name='',
+...   original_path='',
+...   extension='',
+...   tags='',
+...   tag_array=['tag3']
+... )
+>>> cross_test_file_5 = AutotagicalFile(
+...   name='Unnamed4',
+...   raw_name='',
+...   original_path='',
+...   extension='',
+...   tags='',
+...   tag_array=['tag1']
+... )
+>>> cross_test_file_6 = AutotagicalFile(
+...   name='Unnamed4',
+...   raw_name='',
+...   original_path='',
+...   extension='',
+...   tags='',
+...   tag_array=['tag2']
+... )
+>>> cross_files = [cross_test_file_1, cross_test_file_2, cross_test_file_3, cross_test_file_4, cross_test_file_5, cross_test_file_6]
+>>> cross_schema = AutotagicalSchema()
+>>> cross_schema.load_schema({
+...   "file_type": "autotagical_schema",
+...   "schema_file_version": "1.1",
+...   "tag_formats": [{"tag_pattern": " ", "tag_split_pattern": " "}],
+...   "unnamed_patterns": [" "],
+...   "renaming_schemas": [
+...     {
+...       "filter": ["tag1"],
+...       "format_string": "Collision/ITER| tag1 /#|/EITER|"
+...     },
+...     {
+...       "filter": ["tag2"],
+...       "format_string": "Collision/ITER| tag2 /#|/EITER|"
+...     },
+...     {
+...       "filter": ["tag3"],
+...       "format_string": "Collision/ITER| tag3 /#|/EITER|"
+...     }
+...   ],
+...   "movement_schema": []
+... })
+True
+>>> cross_namer = AutotagicalNamer(cross_schema.renaming_schemas, cross_schema.unnamed_patterns)
+
+* Test
+
+>>> output = cross_namer.determine_names(cross_files, test_groups, True)
+>>> for f in output:
+...     print(f)
+-----File-----
+  Destination: ""
+  Extension: ""
+  Move Failed: False
+  Name: "Unnamed1"
+  Original Path: ""
+  Output Name: "Collision tag1 1"
+  Raw Name: ""
+  Rename Failed: False
+  Tags: ""
+  Tag Array: ['tag1']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ""
+  Move Failed: False
+  Name: "Unnamed2"
+  Original Path: ""
+  Output Name: "Collision tag2 1"
+  Raw Name: ""
+  Rename Failed: False
+  Tags: ""
+  Tag Array: ['tag2']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ""
+  Move Failed: False
+  Name: "Unnamed3"
+  Original Path: ""
+  Output Name: "Collision tag1 2"
+  Raw Name: ""
+  Rename Failed: False
+  Tags: ""
+  Tag Array: ['tag1']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ""
+  Move Failed: False
+  Name: "Unnamed4"
+  Original Path: ""
+  Output Name: "Collision tag3 1"
+  Raw Name: ""
+  Rename Failed: False
+  Tags: ""
+  Tag Array: ['tag3']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ""
+  Move Failed: False
+  Name: "Unnamed4"
+  Original Path: ""
+  Output Name: "Collision tag1 3"
+  Raw Name: ""
+  Rename Failed: False
+  Tags: ""
+  Tag Array: ['tag1']
+-----End File-----
+-----File-----
+  Destination: ""
+  Extension: ""
+  Move Failed: False
+  Name: "Unnamed4"
+  Original Path: ""
+  Output Name: "Collision tag2 2"
+  Raw Name: ""
+  Rename Failed: False
+  Tags: ""
+  Tag Array: ['tag2']
+-----End File-----
