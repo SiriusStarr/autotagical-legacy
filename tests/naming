@@ -549,6 +549,18 @@ Simple Operators
 >>> substitute_operators('This is /TAGS|.', test_file_3, test_groups)
 'This is [tripel ale refrigerated].'
 
+* /PP| operator
+
+>>> substitute_operators('/PP|This is /?T|pale_ale/| /TAGS| /EXT|', test_file_2, test_groups)
+'This Is Pale Ale [pale_ale ale refrigerated cascade] .txt'
+
+* /PP-| operator
+
+>>> substitute_operators('/PP|This is /?T|pale_ale/| /TAGS| with hyphen-tags /EXT|', test_file_2, test_groups)
+'This Is Pale Ale [pale_ale ale refrigerated cascade] With Hyphen-Tags .txt'
+>>> substitute_operators('/PP-|This is /?T|pale_ale/| /TAGS| with hyphen-tags /EXT|', test_file_2, test_groups)
+'This Is Pale Ale [pale_ale ale refrigerated cascade] With Hyphen Tags .txt'
+
 Conditionals
 ------------
 

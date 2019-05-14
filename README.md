@@ -572,6 +572,15 @@ one use or the other, as noted below.
   * `File [tag1, tag2]` -- "Tag: tag1"
   * `File [tag2, tag4]` -- "Tag: "
   * `File [tag1, tag2, tag3]` -- "Tag: tag2"
+* `/PP|` -- The "prettify" operator.  Putting this at the very start of a format
+  string causes the result to be "prettified" after all other operators have
+  been resolved (except `/TAGS|` and `/EXT`, for obvious reasons).  In
+  practice, this means converting to title-case and replacing underscores `_`
+  with spaces, e.g. `/PP|bank_statements` will become `Bank Statements`, which
+  most would agree is prettier.  It must be the **first** operator in a format
+  string (after other operators have been resolved).
+* `/PP-|` -- Like the normal "prettify" operator but additionally convert
+  hyphens `-` to spaces.
 
 ### Subfolders Only
 The following operators only function in format strings for subfolder names and

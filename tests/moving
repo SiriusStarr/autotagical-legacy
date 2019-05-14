@@ -430,6 +430,19 @@ True
 >>> process_filter_level(test_file_1, {"filter": ["/*|"], "subfolder": "A /?TIG|American Styles/| operator.", "sublevels": [{"filter": ["/*|"], "subfolder": "Another /?TIG|Whisky/| operator.", "sublevels": []}]}, test_groups) == (True, os.path.join('A dipa operator.', 'Another  operator.'))
 True
 
+* /PP| operator
+
+>>> process_filter_level(test_file_2, {"filter": ["/*|"], "subfolder": "/PP|A /?TIG|American Styles/| operator.", "sublevels": [{"filter": ["/*|"], "subfolder": "Another /?TIG|Whisky/| operator.", "sublevels": []}]}, test_groups) == (True, os.path.join('A Pale Ale Operator.', 'Another  operator.'))
+True
+
+* /PP-| operator
+
+>>> process_filter_level(test_file_2, {"filter": ["/*|"], "subfolder": "/PP|A /?TIG|American Styles/| hyphen-operator.", "sublevels": [{"filter": ["/*|"], "subfolder": "Another /?TIG|Whisky/| operator.", "sublevels": []}]}, test_groups) == (True, os.path.join('A Pale Ale Hyphen-Operator.', 'Another  operator.'))
+True
+
+>>> process_filter_level(test_file_2, {"filter": ["/*|"], "subfolder": "/PP-|A /?TIG|American Styles/| hyphen-operator.", "sublevels": [{"filter": ["/*|"], "subfolder": "Another /?TIG|Whisky/| operator.", "sublevels": []}]}, test_groups) == (True, os.path.join('A Pale Ale Hyphen Operator.', 'Another  operator.'))
+True
+
 * /EXT| operator
 
 >>> process_filter_level(test_file_2, {"filter": ["/*|"], "subfolder": "A /EXT| operator.", "sublevels": [{"filter": ["/*|"], "subfolder": "Another /EXT| operator.", "sublevels": []}]}, test_groups) == (True, os.path.join('A .txt operator.', 'Another .txt operator.'))

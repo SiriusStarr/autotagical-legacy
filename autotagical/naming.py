@@ -48,6 +48,10 @@ from autotagical.filtering import check_against_filter, \
 from autotagical.schema import SchemaError
 
 
+# Regex for fixing miss-capitalization of apostrophes mid-word by str.title()
+_TITLE_FIX_REGEX = re.compile(r"[A-Za-z]+('[A-Za-z]+)?")
+
+
 class FormatStringType(Enum):
     """
     Denotes the type of format string to be processed.
@@ -256,9 +260,22 @@ def substitute_operators(format_string, file, tag_groups,
                             format_string)
 
     # Anything that is left are simple replacement operators, so sub them all
-    to_return = to_return.replace('/EXT|', file.extension)
-    to_return = to_return.replace('/TAGS|', file.tags)
     to_return = to_return.replace('/FILE|', file.name)
+
+    # Prettify if told to.  This needs to happen before tags and extension are
+    # substituted in.
+    if to_return.startswith(('/PP|', '/PP-|')):
+        to_return = to_return[4:].replace('_', ' ')
+        if to_return.startswith('|'):
+            to_return = to_return[1:].replace('-', ' ')
+        to_return = to_return.title()
+        to_return = _TITLE_FIX_REGEX.sub(lambda m: m.group(0)[0].upper() +
+                                         m.group(0)[1:].lower(), to_return)
+        to_return = to_return.replace('/Ext|', file.extension)
+        to_return = to_return.replace('/Tags|', file.tags)
+    else:
+        to_return = to_return.replace('/EXT|', file.extension)
+        to_return = to_return.replace('/TAGS|', file.tags)
 
     def check_return(value):
         if '/' in value:
