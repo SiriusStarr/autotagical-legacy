@@ -1,3 +1,5 @@
+# This tool is deprecated and will not receive further updates.  A more flexible replacement is available [here](https://github.com/SiriusStarr/autotagical) but is not written in Python.
+
 # autotagical
 
 *autotagical* is a utility to automagically rename and sort tagged files (such
